@@ -105,8 +105,10 @@ async def sample_word_2(
         # Force model to sample a token with an appropriate number of characters
         if max_chars is not None:
             await self.observe(
-                context.mask_dist(
-                    context.lm.masks.MAX_TOKEN_LENGTH[max_chars - len(word.strip())]
+                self.context.mask_dist(
+                    self.context.lm.masks.token_length_mask(
+                        max_chars=max_chars - len(word.strip())
+                    )
                 ),
                 True,
             )

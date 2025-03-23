@@ -49,24 +49,22 @@ class Masks:
         )
         self.EOS = set([lm.tokenizer.eos_token_id])
 
-        self.MAX_TOKEN_LENGTH = self.precompute_token_length_masks(lm)
+        self.precompute_token_lengths(lm)
 
-    def precompute_token_length_masks(self, lm):
-        """Precompute masks for tokens of different lengths.
+    def precompute_token_lengths(self, lm):
+        """Precompute the length of each token. Special tokens are considered to have length 0."""
+        self._token_lengths = {i: len(v) for (i, v) in enumerate(lm.str_vocab)}
+        for i in lm.tokenizer.all_special_ids:
+            self._token_lengths[i] = 0
 
-        Each mask is a set of token ids that are of the given length or shorter."""
-        max_token_length = max([len(t) for t in lm.str_vocab])
-
-        masks = defaultdict(lambda: self.ALL_TOKENS)
-        masks[0] = set([lm.tokenizer.eos_token_id])
-        for token_length in range(1, max_token_length + 1):
-            masks[token_length] = set(
-                i
-                for (i, v) in enumerate(lm.str_vocab)
-                if len(v) <= token_length and i != lm.tokenizer.eos_token_id
-            )
-
-        return masks
+    def token_length_mask(self, min: int = None, max: int = None):
+        if min is None:
+            min = 0
+        if max is None:
+            max = float("inf")
+        return set(
+            [i for i, v_len in self._token_lengths.items() if min <= v_len <= max]
+        )
 
 
 class TokenSequence:
