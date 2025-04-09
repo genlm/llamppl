@@ -50,4 +50,4 @@ collie = [
 examples = ["nltk>=3.8.1"]
 
 [tool.setuptools.packages.find]
-packages = ["llamppl"]
+include = ["llamppl"]
