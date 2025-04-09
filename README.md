@@ -117,4 +117,4 @@ sunny and cool.
 hot and humid with a possibility of rain, which is not uncommon for this part of Mississippi.
 ```
 
-Further documentation can be found at https://probcomp.github.io/hfppl.
+Further documentation can be found at https://genlm.github.io/hfppl.
