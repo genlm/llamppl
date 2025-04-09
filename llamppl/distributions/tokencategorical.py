@@ -13,7 +13,7 @@ class TokenCategorical(Distribution):
         uses softmax to normalize them and samples a Token from the resulting categorical.
 
         Args:
-            lm (hfppl.llms.CachedCausalLM): the language model whose vocabulary is to be generated from.
+            lm (llamppl.llms.CachedCausalLM): the language model whose vocabulary is to be generated from.
             logits (np.array): a numpy array of unnormalized log probabilities.
         """
         self.lm = lm

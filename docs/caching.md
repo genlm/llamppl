@@ -13,7 +13,7 @@ the Transformer is run only once. This is primarily beneficial when:
   it is likely that multiple copies of a particle will sample the same next token. Log probability caching
   allows them to sample the _following_ token using only a single call to the language model.
 
-The log probability cache can be cleared using the [`lm.clear_cache()`][hfppl.llms.CachedCausalLM.clear_cache] method. Note that this method
+The log probability cache can be cleared using the [`lm.clear_cache()`][llamppl.llms.CachedCausalLM.clear_cache] method. Note that this method
 will also clear the KV cache.
 
 ## Key-value caching
@@ -31,13 +31,13 @@ In principle, key-value caching is most useful when:
   queries.
 
 Currently, only the first use case is well-supported by the LLaMPPL library, via the
-[`lm.cache_kv(prompt)`][hfppl.llms.CachedCausalLM.cache_kv] method. This method computes and caches key and value vectors
-for every token in `prompt`. Future calls to [`lm.next_token_logprobs`][hfppl.llms.CachedCausalLM.next_token_logprobs] and [`lm.next_token_logprobs_unbatched`][hfppl.llms.CachedCausalLM.next_token_logprobs_unbatched]
+[`lm.cache_kv(prompt)`][llamppl.llms.CachedCausalLM.cache_kv] method. This method computes and caches key and value vectors
+for every token in `prompt`. Future calls to [`lm.next_token_logprobs`][llamppl.llms.CachedCausalLM.next_token_logprobs] and [`lm.next_token_logprobs_unbatched`][llamppl.llms.CachedCausalLM.next_token_logprobs_unbatched]
 will automatically recognize when `prompt` is a prefix of the new query, and automatically
-exploit incremental computation. Multiple prompts can be cached, and [`lm.clear_kv_cache()`][hfppl.llms.CachedCausalLM.clear_kv_cache] can
+exploit incremental computation. Multiple prompts can be cached, and [`lm.clear_kv_cache()`][llamppl.llms.CachedCausalLM.clear_kv_cache] can
 be used to clear the KV-cache without clearing the log probability cache.
 
-Because [`lm.cache_kv`][hfppl.llms.CachedCausalLM.cache_kv] is not a batched call,
+Because [`lm.cache_kv`][llamppl.llms.CachedCausalLM.cache_kv] is not a batched call,
 it is not well-suited to caching
 different strings for different particles.
 Rather, it is best used in the `__init__` method of a model--or even

@@ -198,7 +198,7 @@ class Model:
         encodes a much easier task: freely generate `token_1` and then force-feed `token_2` as the following token.
 
         Args:
-            dist (hfppl.distributions.distribution.Distribution): the distribution on which to intervene.
+            dist (llamppl.distributions.distribution.Distribution): the distribution on which to intervene.
             x: the value to intervene with.
         """
         await dist.log_prob(x)

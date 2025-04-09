@@ -1,28 +1,30 @@
-# LLaMPPL + HuggingFace
+# LLaMPPL
 
-[![docs](https://github.com/probcomp/hfppl/actions/workflows/docs.yml/badge.svg)](https://probcomp.github.io/hfppl)
-[![Tests](https://github.com/probcomp/hfppl/actions/workflows/pytest.yml/badge.svg)](https://github.com/probcomp/hfppl/actions/workflows/pytest.yml)
-[![codecov](https://codecov.io/gh/probcomp/hfppl/graph/badge.svg?token=414EHUC2P3)](https://codecov.io/gh/probcomp/hfppl)
-
+[![docs](https://github.com/probcomp/llamppl/actions/workflows/docs.yml/badge.svg)](https://probcomp.github.io/llamppl)
+[![Tests](https://github.com/probcomp/llamppl/actions/workflows/pytest.yml/badge.svg)](https://github.com/probcomp/llamppl/actions/workflows/pytest.yml)
+[![codecov](https://codecov.io/gh/probcomp/llamppl/graph/badge.svg?token=414EHUC2P3)](https://codecov.io/gh/probcomp/llamppl)
 
 
 LLaMPPL is a research prototype for language model probabilistic programming: specifying language generation tasks by writing probabilistic programs that combine calls to LLMs, symbolic program logic, and probabilistic conditioning. To solve these tasks, LLaMPPL uses a specialized sequential Monte Carlo inference algorithm. This technique, SMC steering, is described in [our recent workshop abstract](https://arxiv.org/abs/2306.03081).
-
-This repository implements LLaMPPL for use with HuggingFace Transformers.
 
 ## Installation
 
 If you just want to try out LLaMPPL, check out our [demo notebook on Colab](https://colab.research.google.com/drive/1uJEC-U8dcwsTWccCDGVexpgXexzZ642n?usp=sharing), which performs a simple constrained generation task using GPT-2. (Larger models may require more RAM or GPU resources than Colab's free version provides.)
 
-> [!NOTE]
-> We use [poetry](https://python-poetry.org/) to manage dependencies. If you don't have poetry installed, you can install it with `pip install poetry`.
-
-To get started on your own machine, clone this repository and run `poetry install` to install `hfppl` and its dependencies.
+To get started on your own machine, you can install this library from PyPI:
 
 ```
-git clone https://github.com/probcomp/hfppl
-cd hfppl
-poetry install
+pip install llamppl
+```
+
+### Local installation
+
+For local development, clone this repository and run `pip install -e ".[dev,examples]"` to install `llamppl` and its development dependencies.
+
+```
+git clone https://github.com/genlm/llamppl
+cd llamppl
+pip install -e ".[dev,examples]"
 ```
 
 Then, try running an example. Note that this will cause the weights for Vicuna-7b-v1.5 to be downloaded.
@@ -35,18 +37,18 @@ If everything is working, you should see the model generate political news using
 
 ### vLLM backend
 
-As of version 0.2.0, hfppl now supports vllm backend, which provides significant speedups over the HuggingFace backend. To install this backend, simply add the following:
+As of version 0.2.0, llamppl now supports vllm backend, which provides significant speedups over the HuggingFace backend. To install this backend, simply add the following:
 
 ```
-poetry install --with vllm
+pip install -e ".[vllm]"
 ```
 
 ## Modeling with LLaMPPL
 
-A LLaMPPL program is a subclass of the `hfppl.Model` class.
+A LLaMPPL program is a subclass of the `llamppl.Model` class.
 
 ```python
-from hfppl import Model, LMContext, CachedCausalLM
+from llamppl import Model, LMContext, CachedCausalLM
 
 # A LLaMPPL model subclasses the Model class
 class MyModel(Model):
@@ -95,7 +97,7 @@ To run inference, we use the `smc_steer` or `smc_standard` methods:
 
 ```python
 import asyncio
-from hfppl import smc_steer
+from llamppl import smc_steer
 
 # Initialize the HuggingFace model
 lm = CachedCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf", backend='hf', auth_token=<YOUR_HUGGINGFACE_API_TOKEN_HERE>)
@@ -117,4 +119,4 @@ sunny and cool.
 hot and humid with a possibility of rain, which is not uncommon for this part of Mississippi.
 ```
 
-Further documentation can be found at https://probcomp.github.io/hfppl.
+Further documentation can be found at https://genlm.github.io/llamppl.

@@ -1,4 +1,4 @@
-# Builds the `hfppl` poetry environment and runs all tests
+# Builds the `llamppl` poetry environment and runs all tests
 # Adapted from: https://github.com/marketplace/actions/install-poetry-action
 
 name: Codebase tests
@@ -41,7 +41,7 @@ jobs:
     - name: Run tests
       run: |
         eval $(poetry env activate)
-        pytest -v --cov=hfppl --cov-report=json
+        pytest -v --cov=llamppl --cov-report=json
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
@@ -50,4 +50,4 @@ jobs:
         disable_search: true
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.json
-        slug: probcomp/hfppl
+        slug: probcomp/llamppl

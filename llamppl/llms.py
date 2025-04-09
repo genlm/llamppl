@@ -5,9 +5,9 @@ import warnings
 from collections import defaultdict
 
 import torch
-from genlm_backend.llm import AsyncTransformer
-from genlm_backend.llm import AsyncVirtualLM
-from genlm_backend.llm import MockAsyncLM
+from genlm.backend.llm import AsyncTransformer
+from genlm.backend.llm import AsyncVirtualLM
+from genlm.backend.llm import MockAsyncLM
 
 VLLM_AVAILABLE = True
 try:
@@ -79,14 +79,14 @@ class TokenSequence:
     * strings, which are tokenized by `lm.tokenizer`
 
     Attributes:
-        lm (hfppl.llms.CachedCausalLM): the language model whose vocabulary the tokens come from.
-        seq (list[hfppl.llms.Token]): the sequence of tokens."""
+        lm (llamppl.llms.CachedCausalLM): the language model whose vocabulary the tokens come from.
+        seq (list[llamppl.llms.Token]): the sequence of tokens."""
 
     def __init__(self, lm, seq=None):
         """Create a `TokenSequence` from a language model and a sequence.
 
         Args:
-            lm (hfppl.llms.CachedCausalLM): the language model whose vocabulary the tokens come from.
+            lm (llamppl.llms.CachedCausalLM): the language model whose vocabulary the tokens come from.
             seq (str | list[int]): the sequence of token ids, or a string which will be automatically tokenized. Defaults to the singleton sequence containing a bos token.
         """
         self.lm = lm
@@ -142,7 +142,7 @@ class Token:
     """Class representing a token.
 
     Attributes:
-        lm (hfppl.llms.CachedCausalLM): the language model for which this is a Token.
+        lm (llamppl.llms.CachedCausalLM): the language model for which this is a Token.
         token_id (int): the integer token id (an index into the vocabulary).
         token_str (str): a string, which the token represents—equal to `lm.str_vocab[token_id]`.
     """
@@ -182,7 +182,7 @@ class Token:
 
 
 class CachedCausalLM:
-    """Wrapper around a [`genlm_backend.llm.AsyncLM`](https://probcomp.github.io/genlm-backend/reference/genlm_backend/llm/__init__/).
+    """Wrapper around a [`genlm.backend.llm.AsyncLM`](https://genlm.github.io/genlm-backend/reference/genlm/backend/llm/__init__/).
 
     Attributes:
         model (genlm_backend.llm.AsyncLM): The underlying language model (either `AsyncVirtualLM` or `AsyncTransformer`).
@@ -208,7 +208,7 @@ class CachedCausalLM:
                 See [`AsyncLM` documentation](https://probcomp.github.io/genlm-backend/reference/genlm_backend/llm/__init__/).
 
         Returns:
-            CachedCausalLM: The hfppl-compatible interface to the `AsyncLM` model.
+            CachedCausalLM: The llamppl-compatible interface to the `AsyncLM` model.
         """
         backend = backend or (
             "vllm" if (torch.cuda.is_available() and VLLM_AVAILABLE) else "hf"
