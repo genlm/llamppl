@@ -30,18 +30,10 @@ pip install -e ".[dev,examples]"
 Then, try running an example. Note that this will cause the weights for Vicuna-7b-v1.5 to be downloaded.
 
 ```
-poetry run python examples/hard_constraints.py
+python examples/hard_constraints.py
 ```
 
 If everything is working, you should see the model generate political news using words that are at most five letters long (e.g., "Dr. Jill Biden may still be a year away from the White House but she is set to make her first trip to the U.N. today.").
-
-### vLLM backend
-
-As of version 0.2.0, llamppl now supports vllm backend, which provides significant speedups over the HuggingFace backend. To install this backend, simply add the following:
-
-```
-pip install -e ".[vllm]"
-```
 
 ## Modeling with LLaMPPL
 
