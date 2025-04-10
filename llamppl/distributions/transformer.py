@@ -12,8 +12,8 @@ class Transformer(Distribution):
         by a language model. Supports auto-batching.
 
         Args:
-            lm (hfppl.llms.CachedCausalLM): the language model.
-            prompt (str | hfppl.llms.TokenSequence): the sequence of tokens to use as the prompt. If a string, `lm.tokenizer` is used to encode it.
+            lm (llamppl.llms.CachedCausalLM): the language model.
+            prompt (str | llamppl.llms.TokenSequence): the sequence of tokens to use as the prompt. If a string, `lm.tokenizer` is used to encode it.
             temp (float): temperature at which to generate (0 < `temp` < `float('inf')`).
         """
         self.lm = lm

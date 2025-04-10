@@ -6,11 +6,11 @@ One easy way to try LLaMPPL out is to use a Colab notebook. We have [a demo note
 
 ## Installing LLaMPPL
 
-To get started, clone the `hfppl` repository and install the `hfppl` package.
+To get started, clone the `llamppl` repository and install the `llamppl` package.
 
 ```bash
-git clone https://github.com/probcomp/hfppl
-cd hfppl
+git clone https://github.com/genlm/llamppl
+cd llamppl
 poetry install
 ```
 
@@ -28,12 +28,12 @@ Depending on your available GPU memory, you may wish to edit the example to chan
 
 Let's write a LLaMPPL model to generate according to the hard constraint that completions do not use the lowercase letter `e`.
 
-To do so, we write subclass the [`Model`](hfppl.modeling.Model) class:
+To do so, we write subclass the [`Model`](llamppl.modeling.Model) class:
 
 ```python
 # examples/no_e.py
 
-from hfppl import Model, LMContext, CachedCausalLM
+from llamppl import Model, LMContext, CachedCausalLM
 
 # A LLaMPPL model subclasses the Model class
 class MyModel(Model):
@@ -75,7 +75,7 @@ To run the model, we use an inference method, like `smc_steer`:
 
 ```python
 import asyncio
-from hfppl import smc_steer
+from llamppl import smc_steer
 
 # Initialize the HuggingFace model
 lm = CachedCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf", auth_token=<YOUR_HUGGINGFACE_API_TOKEN_HERE>)

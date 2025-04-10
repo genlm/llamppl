@@ -118,7 +118,7 @@ class LMContext:
     token ids). This changes the current mask.
 
     Attributes:
-        lm (hfppl.llms.CachedCausalLM): the language model for which this is a context
+        lm (llamppl.llms.CachedCausalLM): the language model for which this is a context
         tokens (list[int]): the underlying sequence of tokens, including prompt, in this context
         next_token_logprobs (numpy.array): numpy array holding the log probabilities for the next token. Unlike the log probabilities reported by `CachedCausalLM.next_token_logprobs`, these probabilities are rescaled for this `LMContext`'s temperature parameter, and for any active masks. This vector is managed by the `LMContext` object internally; do not mutate.
         temp (float): temeprature for next-token distribution (0 < temp < float('inf'))
@@ -130,7 +130,7 @@ class LMContext:
         """Create a new `LMContext` with a given prompt and temperature.
 
         Args:
-            lm (hfppl.llms.CachedCausalLM): the language model for which this is a context.
+            lm (llamppl.llms.CachedCausalLM): the language model for which this is a context.
             prompt (str): a string with which to initialize the context. Will be tokenized using `lm.tokenizer`.
             temp (float): temeprature for next-token distribution (0 < temp < float('inf'))
 

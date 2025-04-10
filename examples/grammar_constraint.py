@@ -15,10 +15,10 @@ import asyncio
 from synchromesh.completion_engine import LarkCompletionEngine
 from synchromesh.synchromesh import StreamingCSD
 
-from hfppl.distributions import LMContext
-from hfppl.inference import smc_standard
-from hfppl.llms import CachedCausalLM
-from hfppl.modeling import Model
+from llamppl.distributions import LMContext
+from llamppl.inference import smc_standard
+from llamppl.llms import CachedCausalLM
+from llamppl.modeling import Model
 
 
 class GrammarConstrainedSMC(Model):

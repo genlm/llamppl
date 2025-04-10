@@ -5,7 +5,7 @@ import torch
 
 from examples.haiku import run_example as run_haiku
 from examples.hard_constraints import run_example as run_hard_constraints
-from hfppl.llms import CachedCausalLM
+from llamppl.llms import CachedCausalLM
 
 backends = [
     "mock",

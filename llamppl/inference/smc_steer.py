@@ -62,12 +62,12 @@ async def smc_steer(model, n_particles, n_beam):
     as described in [our workshop abstract](https://arxiv.org/abs/2306.03081).
 
     Args:
-        model (hfppl.modeling.Model): The model to perform inference on.
+        model (llamppl.modeling.Model): The model to perform inference on.
         n_particles (int): Number of particles to maintain.
         n_beam (int): Number of continuations to consider for each particle.
 
     Returns:
-        particles (list[hfppl.modeling.Model]): The completed particles after inference.
+        particles (list[llamppl.modeling.Model]): The completed particles after inference.
     """
     # Create n_particles copies of the model
     particles = [copy.deepcopy(model) for _ in range(n_particles)]

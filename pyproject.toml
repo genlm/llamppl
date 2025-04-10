@@ -1,65 +1,55 @@
-[tool.poetry]
-name = "hfppl"
-version = "0.0.0"
-description = "Deprecated. Please use 'llamppl' instead."
+[project]
+name = "llamppl"
+dynamic = ["version"]
+description = "Probabilistic programming with Large Language Models."
 authors = [
-    "Alex Lew <alexlew@mit.edu>",
-    "Gabriel Grand <grandg@mit.edu>",
-    "Ben LeBrun <lebrunb@mit.edu>",
+    {name = "Alex Lew", email = "alexlew@mit.edu"},
+    {name = "Gabriel Grand", email = "grandg@mit.edu"},
+    {name = "Ben LeBrun", email = "benlebrun1@gmail.com"},
 ]
-license = "MIT"
+license = {text = "MIT"}
 readme = "README.md"
-packages = [{include = "hfppl"}]
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.1.2",
+    "numpy>=1.26.2",
+    "scipy>=1.11.4",
+    "protobuf>=5.27.2",
+    "pre-commit>=3.7.1",
+    "ipykernel>=6.29.5",
+    "genlm-backend>=0.1.0a1",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-torch = "^2.1.2"
-numpy = "^1.26.2"
-scipy = "^1.11.4"
-protobuf = "^5.27.2"
-nltk = {version = "^3.8.1", optional = true}
-pre-commit = "^3.7.1"
-ipykernel = "^6.29.5"
-genlm-backend = "^0.0.2"
+[project.optional-dependencies]
+vllm = ["vllm>=0.6.6"]
+dev = [
+    "pytest",
+    "pytest-benchmark",
+    "pytest-cov",
+    "pre-commit>=3.6.0",
+    "ruff>=0.9.9",
+    "jupyterlab>=4.0.9",
+    "ipywidgets>=8.1.1",
+    "matplotlib>=3.9.1",
+    "seaborn>=0.13.2",
+]
+yelp = [
+    "yake>=0.4.8",
+    "datasets>=2.20.0",
+]
+collie = [
+    "collie-bench>=0.1.0",
+    "nltk>=3.8.1",
+    "dill>=0.3.8",
+    "evaluate>=0.4.2",
+]
+examples = ["nltk>=3.8.1"]
 
-[tool.poetry.group.vllm]
-optional = true
-
-[tool.poetry.group.vllm.dependencies]
-vllm = "^0.6.6"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "*"
-pytest-benchmark = "*"
-pytest-cov = "*"
-pre-commit = "^3.6.0"
-ruff = "^0.9.9"
-jupyterlab = "^4.0.9"
-ipywidgets = "^8.1.1"
-matplotlib = "^3.9.1"
-seaborn = "^0.13.2"
-
-
-[tool.poetry.group.yelp.dependencies]
-yake = "^0.4.8"
-datasets = "^2.20.0"
-
-
-[tool.poetry.group.collie.dependencies]
-collie-bench = "^0.1.0"
-nltk = "^3.8.1"
-dill = "^0.3.8"
-evaluate = "^0.4.2"
-
-[tool.poetry.extras]
-examples=["nltk"]
+[tool.setuptools.packages.find]
+include = ["llamppl"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
-build-backend = "poetry_dynamic_versioning.backend"
+requires = ["setuptools>=64.0", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry.requires-plugins]
-poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
-
-[tool.poetry-dynamic-versioning]
-enable = true
+[tool.setuptools_scm]

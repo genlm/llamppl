@@ -6,7 +6,7 @@ import mkdocs_gen_files
 
 nav = mkdocs_gen_files.Nav()
 
-for path in sorted(Path("hfppl").rglob("*.py")):
+for path in sorted(Path("llamppl").rglob("*.py")):
     if any(part.startswith(".") for part in path.parts):
         continue
 

@@ -5,10 +5,10 @@ Currently supported distributions:
 * `Bernoulli(p: float) -> bool`
 * `Geometric(p: float) -> int`
 * `LogCategorical(logits: array) -> int`
-* `TokenCategorical(lm: hfppl.llms.CachedCausalLM, logits: array) -> hfppl.llms.Token`
-* `Transformer(lm: hfppl.llms.CachedCausalLM) -> hfppl.llms.Token`
-* `LMContext(lm: hfppl.llms.CachedCausalLM, prompt: list[int]).next_token() -> hfppl.llms.Token`
-* `LMContext(lm: hfppl.llms.CachedCausalLM, prompt: list[int]).mask_dist(mask: set[int]) -> bool`
+* `TokenCategorical(lm: llamppl.llms.CachedCausalLM, logits: array) -> llamppl.llms.Token`
+* `Transformer(lm: llamppl.llms.CachedCausalLM) -> llamppl.llms.Token`
+* `LMContext(lm: llamppl.llms.CachedCausalLM, prompt: list[int]).next_token() -> llamppl.llms.Token`
+* `LMContext(lm: llamppl.llms.CachedCausalLM, prompt: list[int]).mask_dist(mask: set[int]) -> bool`
 """
 
 from .bernoulli import Bernoulli

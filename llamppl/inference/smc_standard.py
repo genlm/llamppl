@@ -15,14 +15,14 @@ async def smc_standard(
     Standard sequential Monte Carlo algorithm with multinomial resampling.
 
     Args:
-        model (hfppl.modeling.Model): The model to perform inference on.
+        model (llamppl.modeling.Model): The model to perform inference on.
         n_particles (int): Number of particles to execute concurrently.
         ess_threshold (float): Effective sample size below which resampling is triggered, given as a fraction of `n_particles`.
         visualization_dir (str): Path to the directory where the visualization server is running.
         json_file (str): Path to the JSON file to save the record of the inference, relative to `visualization_dir` if provided.
 
     Returns:
-        particles (list[hfppl.modeling.Model]): The completed particles after inference.
+        particles (list[llamppl.modeling.Model]): The completed particles after inference.
     """
     particles = [copy.deepcopy(model) for _ in range(n_particles)]
     await asyncio.gather(*[p.start() for p in particles])
