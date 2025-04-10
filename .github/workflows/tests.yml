@@ -30,7 +30,8 @@ jobs:
             python -m venv venv
             source venv/bin/activate
             pip install -e .[dev,examples]
-            pytest tests --cov=genlm/llamppl --cov-report=json
+            # Add the project root to the PYTHONPATH for examples
+            PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests --cov=llamppl --cov-report=json
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
