@@ -1,4 +1,4 @@
-"""Probabilistic programming with HuggingFace Transformer models."""
+"""Probabilistic programming with Large Language Models."""
 
 from .chunks import *
 from .distributions import *

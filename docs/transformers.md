@@ -2,7 +2,7 @@
 
 ## Load your Transformer as a `CachedCausalLM`
 
-The easiest way to load a Transformer model is to use the [`CachedCausalLM.from_pretrained`][llamppl.llms.CachedCausalLM.from_pretrained] static method, which accepts as input a HuggingFace model identifier. This loads the model's weights into memory, and also loads the appropriate tokenizer. The optional `auth_token` parameter can be provided if the model in question requires HuggingFace authorization (e.g., Meta's Llama 2 models).
+The easiest way to load a Transformer model is to use the [`CachedCausalLM.from_pretrained`][llamppl.llms.CachedCausalLM.from_pretrained] static method, which accepts as input a HuggingFace model identifier. This loads the model's weights into memory, and also loads the appropriate tokenizer. Note that if the model in question requires HuggingFace authorization (e.g., Meta's Llama 2 models), you will need to login via the [`huggingface-cli` command line tool](https://huggingface.co/docs/huggingface_hub/en/guides/cli).
 
 ## Use the LLM within your model via the `Transformer` distribution
 
