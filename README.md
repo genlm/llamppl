@@ -1,7 +1,7 @@
 # LLaMPPL + HuggingFace
 
 [![docs](https://github.com/probcomp/hfppl/actions/workflows/docs.yml/badge.svg)](https://probcomp.github.io/hfppl)
-[![Tests](https://github.com/probcomp/hfppl/actions/workflows/test.yml/badge.svg)](https://github.com/probcomp/hfppl/actions/workflows/test.yml)
+[![Tests](https://github.com/probcomp/hfppl/actions/workflows/tests.yml/badge.svg)](https://github.com/probcomp/hfppl/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/probcomp/hfppl/graph/badge.svg?token=414EHUC2P3)](https://codecov.io/gh/probcomp/hfppl)
 
 ⚠️ **DEPRECATION NOTICE** ⚠️
