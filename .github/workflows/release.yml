@@ -25,16 +25,12 @@ jobs:
         with:
           python-version: 3.11.5
 
-
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-
-      - name: Configure deploy keys
+      - name: Build package
         run: |
-          poetry config pypi-token.pypi ${{ secrets.PYPI_API_KEY }}
+          python3 -m pip install --upgrade build
+          python3 -m build
 
-      - name: Install deps
-        run: poetry install
-
-      - name: Deploy to PyPI
-        run: poetry publish --build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
