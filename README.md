@@ -1,7 +1,7 @@
 # LLaMPPL + HuggingFace
 
-[![docs](https://github.com/probcomp/hfppl/actions/workflows/docs.yml/badge.svg)](https://probcomp.github.io/hfppl)
-[![Tests](https://github.com/probcomp/hfppl/actions/workflows/pytest.yml/badge.svg)](https://github.com/probcomp/hfppl/actions/workflows/pytest.yml)
+[![docs](https://github.com/genlm/hfppl/actions/workflows/docs.yml/badge.svg)](https://genlm.github.io/hfppl)
+[![Tests](https://github.com/genlm/hfppl/actions/workflows/tests.yml/badge.svg)](https://github.com/genlm/hfppl/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/probcomp/hfppl/graph/badge.svg?token=414EHUC2P3)](https://codecov.io/gh/probcomp/hfppl)
 
 
@@ -117,4 +117,4 @@ sunny and cool.
 hot and humid with a possibility of rain, which is not uncommon for this part of Mississippi.
 ```
 
-Further documentation can be found at https://probcomp.github.io/hfppl.
+Further documentation can be found at https://genlm.github.io/hfppl.
