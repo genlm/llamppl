@@ -1,11 +1,13 @@
 # LLaMPPL
 
-[![docs](https://github.com/probcomp/llamppl/actions/workflows/docs.yml/badge.svg)](https://probcomp.github.io/llamppl)
-[![Tests](https://github.com/probcomp/llamppl/actions/workflows/pytest.yml/badge.svg)](https://github.com/probcomp/llamppl/actions/workflows/pytest.yml)
-[![codecov](https://codecov.io/gh/probcomp/llamppl/graph/badge.svg?token=414EHUC2P3)](https://codecov.io/gh/probcomp/llamppl)
+[![docs](https://github.com/genlm/llamppl/actions/workflows/docs.yml/badge.svg)](https://genlm.github.io/llamppl)
+[![Tests](https://github.com/genlm/llamppl/actions/workflows/tests.yml/badge.svg)](https://github.com/genlm/llamppl/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/genlm/llamppl/graph/badge.svg?token=414EHUC2P3)](https://codecov.io/gh/genlm/llamppl)
 
 
 LLaMPPL is a research prototype for language model probabilistic programming: specifying language generation tasks by writing probabilistic programs that combine calls to LLMs, symbolic program logic, and probabilistic conditioning. To solve these tasks, LLaMPPL uses a specialized sequential Monte Carlo inference algorithm. This technique, SMC steering, is described in [our recent workshop abstract](https://arxiv.org/abs/2306.03081).
+
+This library was formerly known as `hfppl`.
 
 ## Installation
 
@@ -27,7 +29,7 @@ cd llamppl
 pip install -e ".[dev,examples]"
 ```
 
-Then, try running an example. Note that this will cause the weights for Vicuna-7b-v1.5 to be downloaded.
+Then, try running an example. Note that this will cause the weights of a HuggingFace model to be downloaded.
 
 ```
 python examples/hard_constraints.py
@@ -91,8 +93,8 @@ To run inference, we use the `smc_steer` or `smc_standard` methods:
 import asyncio
 from llamppl import smc_steer
 
-# Initialize the HuggingFace model
-lm = CachedCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf", backend='hf', auth_token=<YOUR_HUGGINGFACE_API_TOKEN_HERE>)
+# Initialize the language model
+lm = CachedCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf")
 
 # Create a model instance
 model = MyModel(lm, "The weather today is expected to be", "e")
