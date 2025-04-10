@@ -1,7 +1,7 @@
 [project]
 name = "llamppl"
 dynamic = ["version"]
-description = "Probabilistic programming with Large Language Models. This library was formerly known as `hfppl`."
+description = "Probabilistic programming with Large Language Models."
 authors = [
     {name = "Alex Lew", email = "alexlew@mit.edu"},
     {name = "Gabriel Grand", email = "grandg@mit.edu"},
