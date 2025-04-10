@@ -1,10 +1,12 @@
 # LLaMPPL + HuggingFace
 
 [![docs](https://github.com/probcomp/hfppl/actions/workflows/docs.yml/badge.svg)](https://probcomp.github.io/hfppl)
-[![Tests](https://github.com/probcomp/hfppl/actions/workflows/pytest.yml/badge.svg)](https://github.com/probcomp/hfppl/actions/workflows/pytest.yml)
+[![Tests](https://github.com/probcomp/hfppl/actions/workflows/test.yml/badge.svg)](https://github.com/probcomp/hfppl/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/probcomp/hfppl/graph/badge.svg?token=414EHUC2P3)](https://codecov.io/gh/probcomp/hfppl)
 
-
+⚠️ **DEPRECATION NOTICE** ⚠️
+This package has been renamed to [`llamppl`](https://pypi.org/project/llamppl/).
+You're looking at the final release of `hfppl`. No further updates will be published here.
 
 LLaMPPL is a research prototype for language model probabilistic programming: specifying language generation tasks by writing probabilistic programs that combine calls to LLMs, symbolic program logic, and probabilistic conditioning. To solve these tasks, LLaMPPL uses a specialized sequential Monte Carlo inference algorithm. This technique, SMC steering, is described in [our recent workshop abstract](https://arxiv.org/abs/2306.03081).
 
