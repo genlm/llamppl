@@ -1,7 +1,7 @@
 [project]
 name = "llamppl"
 dynamic = ["version"]
-description = "Probabilistic programming with Large Language Models"
+description = "Probabilistic programming with Large Language Models. This library was formerly known as `hfppl`."
 authors = [
     {name = "Alex Lew", email = "alexlew@mit.edu"},
     {name = "Gabriel Grand", email = "grandg@mit.edu"},
@@ -17,7 +17,7 @@ dependencies = [
     "protobuf>=5.27.2",
     "pre-commit>=3.7.1",
     "ipykernel>=6.29.5",
-    "genlm-backend==0.1.0a1",
+    "genlm-backend>=0.1.0a1",
 ]
 
 [project.optional-dependencies]
