@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "hfppl"
 version = "0.0.0"
-description = "Probabilistic programming with HuggingFace Transformer models."
+description = "Deprecated. Please use 'llamppl' instead."
 authors = [
     "Alex Lew <alexlew@mit.edu>",
     "Gabriel Grand <grandg@mit.edu>",
