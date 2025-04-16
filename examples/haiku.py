@@ -116,7 +116,12 @@ class Haiku(Model):
 
 
 async def run_example(
-    LLM, poem_title, syllable_pattern=[5, 7, 5], n_particles=20, ess_threshold=0.5, resampling_method="multinomial"
+    LLM,
+    poem_title,
+    syllable_pattern=[5, 7, 5],
+    n_particles=20,
+    ess_threshold=0.5,
+    resampling_method="multinomial",
 ):
     # Construct prompt
     prompt = f"""{EXAMPLE_POEMS}
@@ -132,7 +137,12 @@ async def run_example(
 
     # Run inference
     particles = await smc_standard(
-        haiku_model, n_particles, ess_threshold, "html", "results/haiku.json", resampling_method
+        haiku_model,
+        n_particles,
+        ess_threshold,
+        "html",
+        "results/haiku.json",
+        resampling_method,
     )
 
     return particles

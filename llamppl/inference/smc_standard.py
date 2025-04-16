@@ -29,7 +29,7 @@ def stratified_resample(weights):
     # make N subdivisions, and chose a random position within each one
     positions = (np.random.random(N) + range(N)) / N
 
-    indexes = np.zeros(N, 'i')
+    indexes = np.zeros(N, "i")
     cumulative_sum = np.cumsum(weights)
     i, j = 0, 0
     while i < N:
@@ -42,7 +42,12 @@ def stratified_resample(weights):
 
 
 async def smc_standard(
-    model, n_particles, ess_threshold=0.5, visualization_dir=None, json_file=None, resampling_method="multinomial"
+    model,
+    n_particles,
+    ess_threshold=0.5,
+    visualization_dir=None,
+    json_file=None,
+    resampling_method="multinomial",
 ):
     """
     Standard sequential Monte Carlo algorithm with multinomial resampling.
@@ -54,15 +59,19 @@ async def smc_standard(
         visualization_dir (str): Path to the directory where the visualization server is running.
         json_file (str): Path to the JSON file to save the record of the inference, relative to `visualization_dir` if provided.
         resampling_method (str): The method to use for resampling. Must be one of 'multinomial' or 'stratified'. Defaults to 'multinomial'.
-        
+
     Returns:
         particles (list[llamppl.modeling.Model]): The completed particles after inference.
     """
     if not (0 <= ess_threshold <= 1):
-        raise ValueError(f"Effective sample size threshold must be between 0 and 1. Got {ess_threshold}.")
+        raise ValueError(
+            f"Effective sample size threshold must be between 0 and 1. Got {ess_threshold}."
+        )
 
     if resampling_method not in ["multinomial", "stratified"]:
-        raise ValueError(f"Invalid resampling method: {resampling_method}. Must be one of 'multinomial' or 'stratified'.")
+        raise ValueError(
+            f"Invalid resampling method: {resampling_method}. Must be one of 'multinomial' or 'stratified'."
+        )
 
     particles = [copy.deepcopy(model) for _ in range(n_particles)]
     await asyncio.gather(*[p.start() for p in particles])
@@ -89,17 +98,18 @@ async def smc_standard(
         # Normalize weights
         W = np.array([p.weight for p in particles])
         if np.all(W == -np.inf):
-            # Avoid a nans in the normalized weights. 
-            # Could just terminate inference here, but keep running for now. 
+            # Avoid a nans in the normalized weights.
+            # Could just terminate inference here, but keep running for now.
             did_resample = False
             continue
         w_sum = logsumexp(W)
         normalized_weights = W - w_sum
 
         # Resample if necessary
-        if ess_threshold > 0 and (ess_threshold - logsumexp(normalized_weights * 2) < np.log(ess_threshold) + np.log(
-            n_particles
-        )):
+        if ess_threshold > 0 and (
+            ess_threshold - logsumexp(normalized_weights * 2)
+            < np.log(ess_threshold) + np.log(n_particles)
+        ):
             probs = np.exp(normalized_weights)
             if resampling_method == "multinomial":
                 # Alternative implementation uses a multinomial distribution and only makes n-1 copies, reusing existing one, but fine for now

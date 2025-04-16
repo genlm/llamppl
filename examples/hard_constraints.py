@@ -75,7 +75,13 @@ prompt = """3 things to watch …
 3."""
 
 
-async def run_example(LLM, max_tokens=50, n_particles=20, ess_threshold=0.5, resampling_method="multinomial"):
+async def run_example(
+    LLM,
+    max_tokens=50,
+    n_particles=20,
+    ess_threshold=0.5,
+    resampling_method="multinomial",
+):
     # Cache the key value vectors for the prompt.
     LLM.cache_kv(LLM.tokenizer.encode(prompt))
 
@@ -84,7 +90,12 @@ async def run_example(LLM, max_tokens=50, n_particles=20, ess_threshold=0.5, res
 
     # Run inference.
     particles = await smc_standard(
-        constraint_model, n_particles, ess_threshold, "html", "results/output.json", resampling_method
+        constraint_model,
+        n_particles,
+        ess_threshold,
+        "html",
+        "results/output.json",
+        resampling_method,
     )
     for p in particles:
         print(f"{p.context}")
