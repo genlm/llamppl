@@ -4,6 +4,10 @@ import numpy as np
 
 
 def logsumexp(nums):
+    nums = np.asarray(nums)
+    if np.all(nums == -np.inf):
+        return -np.inf
+
     m = np.max(nums)
     return np.log(np.sum(np.exp(nums - m))) + m
 
