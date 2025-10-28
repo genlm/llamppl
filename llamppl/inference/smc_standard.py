@@ -1,11 +1,43 @@
 import asyncio
 import copy
 from datetime import datetime
-import warnings
 import numpy as np
 
 from ..util import logsumexp
 from .smc_record import SMCRecord
+
+
+async def revive_particles(particles, rng, mode: str) -> bool:
+    """
+    Revive particles that have been killed.
+
+    Args:
+        particles (list[llamppl.modeling.Model]): The particles to revive.
+        rng (numpy.random.Generator): The random number generator to use.
+        mode (str): The mode to use for revival. Must be one of 'uniform'.
+    """
+    idx_dead = []
+    idx_alive = []
+    for i, p in enumerate(particles):
+        if p.weight == -float("inf"):
+            idx_dead.append(i)
+        else:
+            idx_alive.append(i)
+
+    if not idx_dead:
+        return False
+
+    if not idx_alive:
+        return False
+
+    if mode == "uniform":
+        picks = rng.choice(idx_alive, size=len(idx_dead), replace=True)
+    else:
+        raise ValueError(f"Unknown revival mode: {mode}")
+    for d, a in zip(idx_dead, picks):
+        src = particles[a]
+        particles[d] = copy.deepcopy(src)
+    return True
 
 
 def stratified_resample(weights):
@@ -63,12 +95,14 @@ async def smc_standard(
     Returns:
         particles (list[llamppl.modeling.Model]): The completed particles after inference.
     """
+
+    rng = np.random.default_rng()
     if not (0 <= ess_threshold <= 1):
         raise ValueError(
             f"Effective sample size threshold must be between 0 and 1. Got {ess_threshold}."
         )
 
-    if resampling_method not in ["multinomial", "stratified"]:
+    if resampling_method not in ["multinomial", "stratified", "uniform_revival"]:
         raise ValueError(
             f"Invalid resampling method: {resampling_method}. Must be one of 'multinomial' or 'stratified'."
         )
@@ -80,6 +114,7 @@ async def smc_standard(
 
     ancestor_indices = list(range(n_particles))
     did_resample = False
+
     while any(map(lambda p: not p.done_stepping(), particles)):
         # Step each particle
         for p in particles:
@@ -95,45 +130,42 @@ async def smc_standard(
             else:
                 history.add_smc_step(particles)
 
-        # Normalize weights
-        W = np.array([p.weight for p in particles])
-        if np.all(W == -np.inf):
-            # Avoid a nans in the normalized weights.
-            # Could just terminate inference here, but keep running for now.
+        if resampling_method == "uniform_revival":
+            boundary_update = any(
+                p.done_stepping() or getattr(p, "_boundary_update", False)
+                for p in particles
+            )  # A guard for debugging, we should always be at a boundary update
             did_resample = False
-            continue
-        w_sum = logsumexp(W)
-        normalized_weights = W - w_sum
+            if boundary_update:
+                did_resample = await revive_particles(particles, rng, mode="uniform")
+        else:
+            W = np.array([p.weight for p in particles])
+            w_sum = logsumexp(W)
+            normalized_weights = W - w_sum
 
-        # Resample if necessary
-        if ess_threshold > 0 and (
-            ess_threshold - logsumexp(normalized_weights * 2)
-            < np.log(ess_threshold) + np.log(n_particles)
-        ):
-            probs = np.exp(normalized_weights)
-            if resampling_method == "multinomial":
+            # Resample if necessary
+            if -logsumexp(normalized_weights * 2) < np.log(ess_threshold) + np.log(
+                n_particles
+            ):
                 # Alternative implementation uses a multinomial distribution and only makes n-1 copies, reusing existing one, but fine for now
+                probs = np.exp(normalized_weights)
                 ancestor_indices = [
                     np.random.choice(range(len(particles)), p=probs)
                     for _ in range(n_particles)
                 ]
-            elif resampling_method == "stratified":
-                ancestor_indices = stratified_resample(probs)
+
+                if record:
+                    # Sort the ancestor indices
+                    ancestor_indices.sort()
+
+                particles = [copy.deepcopy(particles[i]) for i in ancestor_indices]
+                avg_weight = w_sum - np.log(n_particles)
+                for p in particles:
+                    p.weight = avg_weight
+
+                did_resample = True
             else:
-                raise ValueError(f"Invalid resampling method: {resampling_method}.")
-
-            if record:
-                # Sort the ancestor indices
-                ancestor_indices.sort()
-
-            particles = [copy.deepcopy(particles[i]) for i in ancestor_indices]
-            avg_weight = w_sum - np.log(n_particles)
-            for p in particles:
-                p.weight = avg_weight
-
-            did_resample = True
-        else:
-            did_resample = False
+                did_resample = False
 
     if record:
         # Figure out path to save JSON.
