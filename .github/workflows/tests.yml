@@ -62,7 +62,7 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -e .[mlx, dev, examples]
+          pip install -e .[mlx,dev,examples]
           PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests --cov=llamppl --cov-report=json
 
       - name: Upload MLX coverage to Codecov
