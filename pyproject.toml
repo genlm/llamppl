@@ -17,11 +17,12 @@ dependencies = [
     "protobuf>=5.27.2",
     "pre-commit>=3.7.1",
     "ipykernel>=6.29.5",
-    "genlm-backend>=0.1.0a1",
+    "genlm-backend>=0.1.7",
 ]
 
 [project.optional-dependencies]
 vllm = ["vllm>=0.6.6"]
+mlx = ["genlm-backend[mlx]>=0.1.7"]
 dev = [
     "pytest",
     "pytest-benchmark",

@@ -5,7 +5,7 @@ import pytest
 import torch
 
 from llamppl.distributions.lmcontext import LMContext
-from llamppl.llms import CachedCausalLM
+from llamppl.llms import CachedCausalLM, MLX_AVAILABLE
 
 backends = [
     "mock",
@@ -14,6 +14,12 @@ backends = [
         "vllm",
         marks=pytest.mark.skipif(
             not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
+        ),
+    ),
+    pytest.param(
+        "mlx",
+        marks=pytest.mark.skipif(
+            not MLX_AVAILABLE, reason="MLX backend requires MLX-LM"
         ),
     ),
 ]

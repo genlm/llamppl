@@ -8,12 +8,19 @@ import torch
 from genlm.backend.llm import AsyncTransformer
 from genlm.backend.llm import AsyncVirtualLM
 from genlm.backend.llm import MockAsyncLM
+from genlm.backend.llm import AsyncMlxLM
 
 VLLM_AVAILABLE = True
 try:
     import vllm
 except ImportError:
     VLLM_AVAILABLE = False
+
+MLX_AVAILABLE = False
+try:
+    import mlx_lm
+except ImportError:
+    MLX_AVAILABLE = False
 
 warnings.filterwarnings("once", category=DeprecationWarning)
 warnings.filterwarnings("once", category=RuntimeWarning)
@@ -223,6 +230,8 @@ class CachedCausalLM:
             model_cls = AsyncTransformer
         elif backend == "mock":
             model_cls = MockAsyncLM
+        elif backend == "mlx":
+            model_cls = AsyncMlxLM
         else:
             raise ValueError(
                 f"Unknown backend: {backend}. Must be one of ['vllm', 'hf', 'mock']"
@@ -280,9 +289,11 @@ class CachedCausalLM:
             self.backend = "hf"
         elif isinstance(model, MockAsyncLM):
             self.backend = "mock"
+        elif isinstance(model, AsyncMlxLM):
+            self.backend = "mlx"
         else:
             raise ValueError(
-                f"Unknown model type: {type(model)}. Must be one of [AsyncVirtualLM, AsyncTransformer, MockAsyncLM]"
+                f"Unknown model type: {type(model)}. Must be one of [AsyncVirtualLM, AsyncTransformer, MockAsyncLM, AsyncMlxLM]"
             )
 
         self.model = model
@@ -355,7 +366,7 @@ class CachedCausalLM:
 
     def reset_async_queries(self):
         """Clear any pending language model queries from the queue."""
-        if self.backend == "hf":
+        if self.backend == "hf" or self.backend == "mlx":
             self.model.reset_async_queries()
         elif self.backend == "vllm":
             warnings.warn(
@@ -376,7 +387,7 @@ class CachedCausalLM:
         Args:
             prompt_tokens (list[int]): token ids for the prompt to cache.
         """
-        if self.backend == "hf":
+        if self.backend == "hf" or self.backend == "mlx":
             self.model.cache_kv(prompt_tokens)
         elif self.backend == "vllm":
             warnings.warn(
