@@ -19,12 +19,6 @@ else:
                 not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
             ),
         ),
-        pytest.param(
-            "mlx",
-            marks=pytest.mark.skipif(
-                not MLX_AVAILABLE, reason="MLX backend requires MLX-LM"
-            ),
-        ),
     ]
 
 

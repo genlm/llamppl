@@ -16,7 +16,7 @@ try:
 except ImportError:
     VLLM_AVAILABLE = False
 
-MLX_AVAILABLE = False
+MLX_AVAILABLE = True
 try:
     import mlx_lm
 except ImportError:
