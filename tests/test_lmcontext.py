@@ -7,26 +7,30 @@ import torch
 from llamppl.distributions.lmcontext import LMContext
 from llamppl.llms import CachedCausalLM, MLX_AVAILABLE
 
-backends = [
-    "mock",
-    "hf",
-    pytest.param(
-        "vllm",
-        marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
+if MLX_AVAILABLE:
+    backends = ["mock", "mlx"]
+else:
+    backends = [
+        "mock",
+        "hf",
+        pytest.param(
+            "vllm",
+            marks=pytest.mark.skipif(
+                not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
+            ),
         ),
-    ),
-    pytest.param(
-        "mlx",
-        marks=pytest.mark.skipif(
-            not MLX_AVAILABLE, reason="MLX backend requires MLX-LM"
+        pytest.param(
+            "mlx",
+            marks=pytest.mark.skipif(
+                not MLX_AVAILABLE, reason="MLX backend requires MLX-LM"
+            ),
         ),
-    ),
-]
+    ]
 
 
 @pytest.fixture
 def lm(backend):
+    kwargs = {"cache_size": 10} if backend == "mlx" else {}
     return CachedCausalLM.from_pretrained("gpt2", backend=backend)
 
 
