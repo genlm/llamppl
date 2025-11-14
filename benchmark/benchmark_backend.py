@@ -11,7 +11,7 @@ import torch
 
 from examples.haiku import run_example as run_haiku
 from examples.hard_constraints import run_example as run_hard_constraints
-from hfppl.llms import CachedCausalLM
+from llamppl.llms import CachedCausalLM, MLX_AVAILABLE
 
 backends = [
     "hf",
@@ -19,6 +19,12 @@ backends = [
         "vllm",
         marks=pytest.mark.skipif(
             not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
+        ),
+    ),
+    pytest.param(
+        "mlx",
+        marks=pytest.mark.skipif(
+            not MLX_AVAILABLE, reason="MLX backend requires MLX-LM"
         ),
     ),
 ]

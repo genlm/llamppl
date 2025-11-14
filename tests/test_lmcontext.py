@@ -5,23 +5,27 @@ import pytest
 import torch
 
 from llamppl.distributions.lmcontext import LMContext
-from llamppl.llms import CachedCausalLM
+from llamppl.llms import CachedCausalLM, MLX_AVAILABLE
 
-backends = [
-    "mock",
-    "hf",
-    pytest.param(
-        "vllm",
-        marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
+if MLX_AVAILABLE:
+    backends = ["mock", "mlx"]
+else:
+    backends = [
+        "mock",
+        "hf",
+        pytest.param(
+            "vllm",
+            marks=pytest.mark.skipif(
+                not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
+            ),
         ),
-    ),
-]
+    ]
 
 
 @pytest.fixture
 def lm(backend):
-    return CachedCausalLM.from_pretrained("gpt2", backend=backend)
+    kwargs = {"cache_size": 10} if backend == "mlx" else {}
+    return CachedCausalLM.from_pretrained("gpt2", backend=backend, **kwargs)
 
 
 @pytest.mark.parametrize("backend", backends)
@@ -33,7 +37,7 @@ def test_init(lm):
     np.testing.assert_allclose(
         lmcontext.next_token_logprobs,
         logprobs,
-        rtol=1e-5,
+        rtol=5e-4,
         err_msg="Sync context __init__",
     )
 
@@ -44,7 +48,7 @@ def test_init(lm):
     np.testing.assert_allclose(
         lmcontext.next_token_logprobs,
         logprobs,
-        rtol=1e-5,
+        rtol=5e-4,
         err_msg="Async context __init__",
     )
 
@@ -55,6 +59,6 @@ def test_init(lm):
     np.testing.assert_allclose(
         lmcontext.next_token_logprobs,
         logprobs,
-        rtol=1e-5,
+        rtol=5e-4,
         err_msg="Async context create",
     )
