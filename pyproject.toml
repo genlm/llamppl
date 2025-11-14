@@ -21,7 +21,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-vllm = ["vllm>=0.6.6"]
+vllm = [
+    "vllm>=0.6.6",
+    "triton==3.2.0",
+]
 mlx = ["genlm-backend[mlx]>=0.1.7"]
 dev = [
     "pytest",

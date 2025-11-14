@@ -24,13 +24,7 @@ else:
 
 @pytest.fixture
 def lm(backend):
-    kwargs = (
-        {"engine_opts": {"gpu_memory_utilization": 0.45}}
-        if backend == "vllm"
-        else {"cache_size": 10}
-        if backend == "mlx"
-        else {}
-    )
+    kwargs = {"cache_size": 10} if backend == "mlx" else {}
     return CachedCausalLM.from_pretrained("gpt2", backend=backend, **kwargs)
 
 

@@ -208,6 +208,7 @@ class CachedCausalLM:
                 - 'vllm' to instantiate an `AsyncVirtualLM`; ideal for GPU usage
                 - 'hf' for an `AsyncTransformer`; ideal for CPU usage
                 - 'mock' for a `MockAsyncLM`; ideal for testing.
+                - 'mlx' for an `AsyncMlxLM`; ideal for usage on devices with Apple silicon.
                 Defaults to 'vllm' if CUDA is available, otherwise 'hf'.
             **kwargs: Additional keyword arguments passed to the `AsyncLM` constructor.
                 See [`AsyncLM` documentation](https://probcomp.github.io/genlm-backend/reference/genlm_backend/llm/__init__/).
