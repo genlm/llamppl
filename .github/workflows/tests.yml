@@ -29,7 +29,7 @@ jobs:
         run: |
             python -m venv venv
             source venv/bin/activate
-            pip install -e .[dev,examples]
+            pip install -e .[vllm,dev,examples]
             # Add the project root to the PYTHONPATH for examples
             PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests --cov=llamppl --cov-report=json
 
