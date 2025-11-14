@@ -21,8 +21,6 @@ else:
         ),
     ]
 
-print(backends)
-
 
 @pytest.fixture
 def LLM(backend):

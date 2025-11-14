@@ -8,7 +8,7 @@ from llamppl.distributions.lmcontext import LMContext
 from llamppl.llms import CachedCausalLM, MLX_AVAILABLE
 
 if MLX_AVAILABLE:
-    backends = ["mock", "vllm"]
+    backends = ["mock", "mlx"]
 else:
     backends = [
         "mock",

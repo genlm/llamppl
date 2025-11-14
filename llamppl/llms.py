@@ -234,7 +234,7 @@ class CachedCausalLM:
             model_cls = AsyncMlxLM
         else:
             raise ValueError(
-                f"Unknown backend: {backend}. Must be one of ['vllm', 'hf', 'mock']"
+                f"Unknown backend: {backend}. Must be one of ['vllm', 'hf', 'mock', 'mlx']"
             )
 
         # Handle legacy auth_token parameter. The ability to pass in the auth_token should
@@ -366,7 +366,7 @@ class CachedCausalLM:
 
     def reset_async_queries(self):
         """Clear any pending language model queries from the queue."""
-        if self.backend == "hf" or self.backend == "mlx":
+        if self.backend in ["hf", "mlx"]:
             self.model.reset_async_queries()
         elif self.backend == "vllm":
             warnings.warn(
@@ -387,7 +387,7 @@ class CachedCausalLM:
         Args:
             prompt_tokens (list[int]): token ids for the prompt to cache.
         """
-        if self.backend == "hf" or self.backend == "mlx":
+        if self.backend in ["hf", "mlx"]:
             self.model.cache_kv(prompt_tokens)
         elif self.backend == "vllm":
             warnings.warn(
