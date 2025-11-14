@@ -8,7 +8,7 @@ from llamppl.distributions.lmcontext import LMContext
 from llamppl.llms import CachedCausalLM, MLX_AVAILABLE
 
 if MLX_AVAILABLE:
-    backends = ["mock", "mlx"]
+    backends = ["mock", "vllm"]
 else:
     backends = [
         "mock",
@@ -24,8 +24,14 @@ else:
 
 @pytest.fixture
 def lm(backend):
-    kwargs = {"cache_size": 10} if backend == "mlx" else {}
-    return CachedCausalLM.from_pretrained("gpt2", backend=backend)
+    kwargs = (
+        {"engine_opts": {"gpu_memory_utilization": 0.45}}
+        if backend == "vllm"
+        else {"cache_size": 10}
+        if backend == "mlx"
+        else {}
+    )
+    return CachedCausalLM.from_pretrained("gpt2", backend=backend, **kwargs)
 
 
 @pytest.mark.parametrize("backend", backends)
