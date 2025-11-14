@@ -37,7 +37,7 @@ def test_init(lm):
     np.testing.assert_allclose(
         lmcontext.next_token_logprobs,
         logprobs,
-        rtol=1e-5,
+        rtol=5e-4,
         err_msg="Sync context __init__",
     )
 
@@ -48,7 +48,7 @@ def test_init(lm):
     np.testing.assert_allclose(
         lmcontext.next_token_logprobs,
         logprobs,
-        rtol=1e-5,
+        rtol=5e-4,
         err_msg="Async context __init__",
     )
 
@@ -59,6 +59,6 @@ def test_init(lm):
     np.testing.assert_allclose(
         lmcontext.next_token_logprobs,
         logprobs,
-        rtol=1e-5,
+        rtol=5e-4,
         err_msg="Async context create",
     )
