@@ -19,6 +19,12 @@ To get started on your own machine, you can install this library from PyPI:
 pip install llamppl
 ```
 
+For faster inference on Apple Silicon devices, you can install with MLX backend:
+
+```bash
+pip install llamppl[mlx]
+```
+
 ### Local installation
 
 For local development, clone this repository and run `pip install -e ".[dev,examples]"` to install `llamppl` and its development dependencies.

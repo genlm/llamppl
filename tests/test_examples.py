@@ -5,25 +5,32 @@ import torch
 
 from examples.haiku import run_example as run_haiku
 from examples.hard_constraints import run_example as run_hard_constraints
-from llamppl.llms import CachedCausalLM
+from llamppl.llms import CachedCausalLM, MLX_AVAILABLE
 
-backends = [
-    "mock",
-    "hf",
-    pytest.param(
-        "vllm",
-        marks=pytest.mark.skipif(
-            not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
+if MLX_AVAILABLE:
+    backends = ["mock", "mlx"]
+else:
+    backends = [
+        "mock",
+        "hf",
+        pytest.param(
+            "vllm",
+            marks=pytest.mark.skipif(
+                not torch.cuda.is_available(), reason="vLLM backend requires CUDA"
+            ),
         ),
-    ),
-]
+    ]
 
 
 @pytest.fixture
 def LLM(backend):
     # Set lower gpu_memory_utilization in vllm so that we can fit both models on the GPU
     kwargs = (
-        {"engine_opts": {"gpu_memory_utilization": 0.45}} if backend == "vllm" else {}
+        {"engine_opts": {"gpu_memory_utilization": 0.45}}
+        if backend == "vllm"
+        else {"cache_size": 10}
+        if backend == "mlx"
+        else {}
     )
     return CachedCausalLM.from_pretrained("gpt2", backend=backend, **kwargs)
 

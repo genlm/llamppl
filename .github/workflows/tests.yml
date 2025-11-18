@@ -30,10 +30,43 @@ jobs:
             python -m venv venv
             source venv/bin/activate
             pip install -e .[dev,examples]
+            pip install --force-reinstall 'triton==3.2.0'
             # Add the project root to the PYTHONPATH for examples
             PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests --cov=llamppl --cov-report=json
 
       - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: false
+          disable_search: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.json
+          slug: genlm/llamppl
+
+
+  test_mlx:
+    runs-on: macos-14
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.5'
+          cache: 'pip'
+
+      - name: Run tests with MLX extras
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -e .[mlx,dev,examples]
+          PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests --cov=llamppl --cov-report=json
+
+      - name: Upload MLX coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: false

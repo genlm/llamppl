@@ -8,12 +8,19 @@ import torch
 from genlm.backend.llm import AsyncTransformer
 from genlm.backend.llm import AsyncVirtualLM
 from genlm.backend.llm import MockAsyncLM
+from genlm.backend.llm import AsyncMlxLM
 
 VLLM_AVAILABLE = True
 try:
     import vllm
 except ImportError:
     VLLM_AVAILABLE = False
+
+MLX_AVAILABLE = True
+try:
+    import mlx_lm
+except ImportError:
+    MLX_AVAILABLE = False
 
 warnings.filterwarnings("once", category=DeprecationWarning)
 warnings.filterwarnings("once", category=RuntimeWarning)
@@ -201,6 +208,7 @@ class CachedCausalLM:
                 - 'vllm' to instantiate an `AsyncVirtualLM`; ideal for GPU usage
                 - 'hf' for an `AsyncTransformer`; ideal for CPU usage
                 - 'mock' for a `MockAsyncLM`; ideal for testing.
+                - 'mlx' for an `AsyncMlxLM`; ideal for usage on devices with Apple silicon.
                 Defaults to 'vllm' if CUDA is available, otherwise 'hf'.
             **kwargs: Additional keyword arguments passed to the `AsyncLM` constructor.
                 See [`AsyncLM` documentation](https://probcomp.github.io/genlm-backend/reference/genlm_backend/llm/__init__/).
@@ -223,9 +231,11 @@ class CachedCausalLM:
             model_cls = AsyncTransformer
         elif backend == "mock":
             model_cls = MockAsyncLM
+        elif backend == "mlx":
+            model_cls = AsyncMlxLM
         else:
             raise ValueError(
-                f"Unknown backend: {backend}. Must be one of ['vllm', 'hf', 'mock']"
+                f"Unknown backend: {backend}. Must be one of ['vllm', 'hf', 'mock', 'mlx']"
             )
 
         # Handle legacy auth_token parameter. The ability to pass in the auth_token should
@@ -280,9 +290,11 @@ class CachedCausalLM:
             self.backend = "hf"
         elif isinstance(model, MockAsyncLM):
             self.backend = "mock"
+        elif isinstance(model, AsyncMlxLM):
+            self.backend = "mlx"
         else:
             raise ValueError(
-                f"Unknown model type: {type(model)}. Must be one of [AsyncVirtualLM, AsyncTransformer, MockAsyncLM]"
+                f"Unknown model type: {type(model)}. Must be one of [AsyncVirtualLM, AsyncTransformer, MockAsyncLM, AsyncMlxLM]"
             )
 
         self.model = model
@@ -340,6 +352,8 @@ class CachedCausalLM:
         """Clear any key and value vectors from the cache."""
         if self.backend == "hf":
             self.model.clear_kv_cache()
+        elif self.backend == "mlx":
+            self.model.clear_cache()
         elif self.backend == "vllm":
             warnings.warn(
                 "clear_kv_cache() is only supported for the HuggingFace backend. The KV cache for the vLLM backend is handled internally by vLLM. No operation performed.",
@@ -355,7 +369,7 @@ class CachedCausalLM:
 
     def reset_async_queries(self):
         """Clear any pending language model queries from the queue."""
-        if self.backend == "hf":
+        if self.backend in ["hf", "mlx"]:
             self.model.reset_async_queries()
         elif self.backend == "vllm":
             warnings.warn(
@@ -376,7 +390,7 @@ class CachedCausalLM:
         Args:
             prompt_tokens (list[int]): token ids for the prompt to cache.
         """
-        if self.backend == "hf":
+        if self.backend in ["hf", "mlx"]:
             self.model.cache_kv(prompt_tokens)
         elif self.backend == "vllm":
             warnings.warn(
