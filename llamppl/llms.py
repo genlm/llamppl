@@ -352,6 +352,8 @@ class CachedCausalLM:
         """Clear any key and value vectors from the cache."""
         if self.backend == "hf":
             self.model.clear_kv_cache()
+        elif self.backend == "mlx":
+            self.model.clear_cache()
         elif self.backend == "vllm":
             warnings.warn(
                 "clear_kv_cache() is only supported for the HuggingFace backend. The KV cache for the vLLM backend is handled internally by vLLM. No operation performed.",
