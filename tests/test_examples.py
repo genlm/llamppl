@@ -36,16 +36,36 @@ def LLM(backend):
 
 
 @pytest.mark.parametrize("backend", backends)
-def test_hard_constraints(LLM, n_particles=20, max_tokens=25):
+def test_hard_constraints(LLM, n_particles=5, max_tokens=25):
     particles = asyncio.run(
         run_hard_constraints(LLM, max_tokens=max_tokens, n_particles=n_particles)
     )
     assert len(particles) == n_particles
 
+    particles = asyncio.run(
+        run_hard_constraints(
+            LLM,
+            max_tokens=max_tokens,
+            n_particles=n_particles,
+            resampling_method="stratified",
+        )
+    )
+    assert len(particles) == n_particles
+
 
 @pytest.mark.parametrize("backend", backends)
-def test_haiku(LLM, n_particles=20):
+def test_haiku(LLM, n_particles=5):
     particles = asyncio.run(
         run_haiku(LLM, poem_title="The beauty of testing", n_particles=n_particles)
+    )
+    assert len(particles) == n_particles
+
+    particles = asyncio.run(
+        run_haiku(
+            LLM,
+            poem_title="The beauty of testing",
+            n_particles=n_particles,
+            resampling_method="stratified",
+        )
     )
     assert len(particles) == n_particles
