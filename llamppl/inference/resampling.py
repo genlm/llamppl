@@ -1,23 +1,3 @@
-"""Resampling methods for sequential Monte Carlo.
-
-Four standard resampling algorithms, ordered from lowest to highest variance:
-
-- **systematic**: Single random offset, evenly spaced. Lowest variance,
-  standard choice in the SMC literature (Heng 2017, Golowich 2026).
-- **stratified**: One random draw per stratum. Low variance, slightly
-  more random than systematic.
-- **residual**: Deterministic floor copies + multinomial on remainders.
-  Low variance, maximizes deterministic component.
-- **multinomial**: Independent categorical draws. Highest variance,
-  included as baseline.
-
-All functions take a 1-D array of normalized probability weights and
-return an integer array of ancestor indices.
-
-Reference implementations from FilterPy (R. Labbe):
-https://filterpy.readthedocs.io/en/latest/monte_carlo/resampling.html
-"""
-
 import numpy as np
 
 
@@ -27,6 +7,9 @@ def systematic_resample(weights):
     Separates the sample space into N equal divisions and uses one
     random offset for all divisions. Every sample is exactly 1/N apart.
     Lowest variance among standard resampling methods.
+
+    Adapted from FilterPy (R. Labbe):
+    https://filterpy.readthedocs.io/en/latest/monte_carlo/resampling.html
 
     Args:
         weights (array-like): Normalized probability weights summing to 1.
@@ -57,6 +40,9 @@ def stratified_resample(weights):
     sample uniformly from each. Guarantees samples are between
     0 and 2/N apart.
 
+    Adapted from FilterPy (R. Labbe):
+    https://filterpy.readthedocs.io/en/latest/monte_carlo/resampling.html
+
     Args:
         weights (array-like): Normalized probability weights summing to 1.
 
@@ -86,15 +72,14 @@ def residual_resample(weights):
     then resamples the remaining slots from the fractional residuals
     using multinomial resampling.
 
+    Adapted from FilterPy (R. Labbe):
+    https://filterpy.readthedocs.io/en/latest/monte_carlo/resampling.html
+
     Args:
         weights (array-like): Normalized probability weights summing to 1.
 
     Returns:
         ndarray: Integer array of ancestor indices.
-
-    Reference:
-        J. S. Liu and R. Chen. Sequential Monte Carlo methods for dynamic
-        systems. JASA, 93(443):1032-1044, 1998.
     """
     N = len(weights)
     weights = np.asarray(weights, dtype=float)
@@ -123,9 +108,7 @@ def multinomial_resample(weights):
     """Multinomial resampling: independent categorical draws.
 
     Each of the N ancestor indices is drawn independently from the
-    categorical distribution defined by the weights. Matches the
-    original llamppl implementation (N independent np.random.choice
-    calls) for reproducibility with existing results.
+    categorical distribution defined by the weights.
 
     Args:
         weights (array-like): Normalized probability weights summing to 1.
