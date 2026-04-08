@@ -6,13 +6,19 @@ import numpy as np
 
 from ..util import logsumexp
 from .smc_record import SMCRecord
+from .resampling import get_resampling_fn
 
 
 async def smc_standard(
-    model, n_particles, ess_threshold=0.5, visualization_dir=None, json_file=None
+    model,
+    n_particles,
+    ess_threshold=0.5,
+    visualization_dir=None,
+    json_file=None,
+    resampling_method="multinomial",
 ):
     """
-    Standard sequential Monte Carlo algorithm with multinomial resampling.
+    Standard sequential Monte Carlo algorithm.
 
     Args:
         model (llamppl.modeling.Model): The model to perform inference on.
@@ -20,10 +26,13 @@ async def smc_standard(
         ess_threshold (float): Effective sample size below which resampling is triggered, given as a fraction of `n_particles`.
         visualization_dir (str): Path to the directory where the visualization server is running.
         json_file (str): Path to the JSON file to save the record of the inference, relative to `visualization_dir` if provided.
+        resampling_method (str): One of 'multinomial', 'stratified', 'systematic', or 'residual'. Defaults to 'multinomial'.
 
     Returns:
         particles (list[llamppl.modeling.Model]): The completed particles after inference.
     """
+    resample_fn = get_resampling_fn(resampling_method)
+
     particles = [copy.deepcopy(model) for _ in range(n_particles)]
     await asyncio.gather(*[p.start() for p in particles])
     record = visualization_dir is not None or json_file is not None
@@ -48,6 +57,10 @@ async def smc_standard(
 
         # Normalize weights
         W = np.array([p.weight for p in particles])
+        if np.all(W == -np.inf):
+            # All particles dead — skip resampling to avoid NaNs
+            did_resample = False
+            continue
         w_sum = logsumexp(W)
         normalized_weights = W - w_sum
 
@@ -55,12 +68,8 @@ async def smc_standard(
         if -logsumexp(normalized_weights * 2) < np.log(ess_threshold) + np.log(
             n_particles
         ):
-            # Alternative implementation uses a multinomial distribution and only makes n-1 copies, reusing existing one, but fine for now
             probs = np.exp(normalized_weights)
-            ancestor_indices = [
-                np.random.choice(range(len(particles)), p=probs)
-                for _ in range(n_particles)
-            ]
+            ancestor_indices = resample_fn(probs).tolist()
 
             if record:
                 # Sort the ancestor indices
