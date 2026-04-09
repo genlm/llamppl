@@ -10,6 +10,10 @@ def systematic_resample(weights):
     defined by the weights. Each index i is resampled exactly
     floor(N * w_i) or ceil(N * w_i) times.
 
+    Unlike stratified and residual resampling, systematic resampling
+    is not provably lower-variance than multinomial in all cases;
+    see Douc et al. (2005), Sec. 3.4: https://arxiv.org/abs/cs/0507025
+
     Adapted from FilterPy (R. Labbe):
     https://filterpy.readthedocs.io/en/latest/monte_carlo/resampling.html
 
