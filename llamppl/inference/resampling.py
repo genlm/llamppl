@@ -4,9 +4,11 @@ import numpy as np
 def systematic_resample(weights):
     """Systematic resampling with a single random offset.
 
-    Separates the sample space into N equal divisions and uses one
-    random offset for all divisions. Every sample is exactly 1/N apart.
-    Lowest variance among standard resampling methods.
+    Generates N equally spaced probe points in [0, 1] with a single
+    random offset between 0 and 1/N. Indices are derived by mapping
+    these points through the inverse CDF of the categorical distribution
+    defined by the weights. Each index i is resampled exactly
+    floor(N * w_i) or ceil(N * w_i) times.
 
     Adapted from FilterPy (R. Labbe):
     https://filterpy.readthedocs.io/en/latest/monte_carlo/resampling.html
@@ -36,9 +38,11 @@ def systematic_resample(weights):
 def stratified_resample(weights):
     """Stratified resampling with one random draw per stratum.
 
-    Divides the cumulative sum into N equal strata and draws one
-    sample uniformly from each. Guarantees samples are between
-    0 and 2/N apart.
+    Divides [0, 1] into N equal strata and draws one uniform point
+    independently within each, so that consecutive points are between
+    0 and 2/N apart. Indices are derived by mapping these points
+    through the inverse CDF of the categorical distribution defined
+    by the weights.
 
     Adapted from FilterPy (R. Labbe):
     https://filterpy.readthedocs.io/en/latest/monte_carlo/resampling.html
