@@ -125,9 +125,7 @@ def multinomial_resample(weights):
         ndarray: Integer array of ancestor indices.
     """
     N = len(weights)
-    return np.array([
-        np.random.choice(N, p=weights) for _ in range(N)
-    ], dtype=np.intp)
+    return np.random.choice(N, size=N, replace=True, p=weights)
 
 
 RESAMPLING_METHODS = {
