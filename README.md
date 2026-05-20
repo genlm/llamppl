@@ -1,6 +1,6 @@
 # LLaMPPL
 
-[![docs](https://github.com/genlm/llamppl/actions/workflows/docs.yml/badge.svg)](https://genlm.github.io/llamppl)
+[![docs](https://github.com/genlm/llamppl/actions/workflows/docs.yml/badge.svg)](https://genlm.org/llamppl)
 [![Tests](https://github.com/genlm/llamppl/actions/workflows/tests.yml/badge.svg)](https://github.com/genlm/llamppl/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/genlm/llamppl/graph/badge.svg?token=pgVQBiqCuM)](https://codecov.io/gh/genlm/llamppl)
 
@@ -119,4 +119,4 @@ sunny and cool.
 hot and humid with a possibility of rain, which is not uncommon for this part of Mississippi.
 ```
 
-Further documentation can be found at https://genlm.github.io/llamppl.
+Further documentation can be found at https://genlm.org/llamppl.

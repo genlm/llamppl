@@ -187,7 +187,7 @@ class Token:
 
 
 class CachedCausalLM:
-    """Wrapper around a [`genlm.backend.llm.AsyncLM`](https://genlm.github.io/genlm-backend/reference/genlm/backend/llm/__init__/).
+    """Wrapper around a [`genlm.backend.llm.AsyncLM`](https://genlm.org/genlm-backend/reference/genlm/backend/llm/__init__/).
 
     Attributes:
         model (genlm_backend.llm.AsyncLM): The underlying language model (either `AsyncVirtualLM` or `AsyncTransformer`).
