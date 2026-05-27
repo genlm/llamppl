@@ -66,12 +66,16 @@ async def csmc_standard(model, n_particles, ess_threshold=0.5):
     for p in particles[1:]:
         p.is_retained = False
 
+    # Run the model's start hook before stepping, exactly as smc_standard
+    # and smc_steer do. Subclasses use start() to establish the initial
+    # weight (e.g. the prefix weight of the empty sequence) and to validate
+    # the target; skipping it drops that contribution from every particle.
+    await asyncio.gather(*[p.start() for p in particles])
+
     while any(not p.done_stepping() for p in particles):
         for p in particles:
             p.untwist()
-        await asyncio.gather(
-            *[p.step() for p in particles if not p.done_stepping()]
-        )
+        await asyncio.gather(*[p.step() for p in particles if not p.done_stepping()])
 
         W = np.array([p.weight for p in particles])
         if np.all(W == -np.inf):
