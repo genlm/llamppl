@@ -15,7 +15,7 @@ async def smc_standard(
     ess_threshold=0.5,
     visualization_dir=None,
     json_file=None,
-    resampling_method="multinomial",
+    resampling_method="stratified",
 ):
     """
     Standard sequential Monte Carlo algorithm.
@@ -26,7 +26,7 @@ async def smc_standard(
         ess_threshold (float): Effective sample size below which resampling is triggered, given as a fraction of `n_particles`.
         visualization_dir (str): Path to the directory where the visualization server is running.
         json_file (str): Path to the JSON file to save the record of the inference, relative to `visualization_dir` if provided.
-        resampling_method (str): One of 'multinomial', 'stratified', 'systematic', or 'residual'. Defaults to 'multinomial'.
+        resampling_method (str): One of 'multinomial', 'stratified', 'systematic', or 'residual'. Defaults to 'stratified' (lower variance than 'multinomial').
 
     Returns:
         particles (list[llamppl.modeling.Model]): The completed particles after inference.
