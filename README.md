@@ -43,6 +43,8 @@ python examples/hard_constraints.py
 
 If everything is working, you should see the model generate political news using words that are at most five letters long (e.g., "Dr. Jill Biden may still be a year away from the White House but she is set to make her first trip to the U.N. today.").
 
+For local development, testing, GPU tests, and CI details, see [DEVELOPING.md](DEVELOPING.md).
+
 ## Modeling with LLaMPPL
 
 A LLaMPPL program is a subclass of the `llamppl.Model` class.
