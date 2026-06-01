@@ -1,0 +1,42 @@
+name: GPU queue watchdog
+
+# Cancels GPU runs stuck in the "queued" state past a threshold, so a PR
+# whose GPU jobs can't be scheduled fails fast (and its gpu-gate goes red)
+# instead of sitting queued for GitHub's 24h maximum.
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  cancel-stale-queued:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      WORKFLOW: tests.yml
+      MAX_QUEUED_MIN: 20
+    steps:
+      - name: Cancel GPU runs stuck queued past threshold
+        run: |
+          set -euo pipefail
+          now=$(date -u +%s)
+          # Capture first so a gh/API failure fails the step (red) instead of silently no-op'ing.
+          queued=$(gh run list -R "$GITHUB_REPOSITORY" --workflow="$WORKFLOW" \
+            --status queued --json databaseId,createdAt -L 50)
+          echo "$queued" | jq -c '.[]' | while IFS= read -r row; do
+            id=$(echo "$row" | jq -r '.databaseId')
+            created=$(echo "$row" | jq -r '.createdAt')
+            # GNU date only (ubuntu-latest); use 'date -j -f' on macOS runners.
+            created_s=$(date -u -d "$created" +%s)
+            age_min=$(( (now - created_s) / 60 ))
+            if [ "$age_min" -ge "$MAX_QUEUED_MIN" ]; then
+              echo "Cancelling run $id (queued ${age_min}m >= ${MAX_QUEUED_MIN}m)"
+              gh run cancel "$id" -R "$GITHUB_REPOSITORY" || true
+            else
+              echo "Run $id queued ${age_min}m (< ${MAX_QUEUED_MIN}m) — leaving"
+            fi
+          done
