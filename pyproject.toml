@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-vllm = ["vllm>=0.6.6"]
+vllm = ["genlm-backend[vllm]>=0.1.7"]
 mlx = ["genlm-backend[mlx]>=0.1.7"]
 dev = [
     "pytest",
