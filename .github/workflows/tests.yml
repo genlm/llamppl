@@ -3,17 +3,26 @@
 name: Codebase tests
 
 on:
+  workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches:
       - main
+
+concurrency:
+  group: gpu-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
   build:
-    runs-on: ParallelHoss
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-gpu-tests') }}
+    runs-on:
+      group: gpu-runners
+    timeout-minutes: 60
 
     steps:
       - name: Check out repository
@@ -74,3 +83,22 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.json
           slug: genlm/llamppl
+
+  gpu-gate:
+    # The single required status check for GPU tests.
+    # Passes when the GPU job succeeds OR is intentionally skipped
+    # (skip-gpu-tests label, or non-PR paths); fails on failure/cancelled.
+    if: ${{ always() }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require GPU job to pass or be intentionally skipped
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          set -euo pipefail
+          echo "build=$BUILD_RESULT"
+          case "$BUILD_RESULT" in
+            success|skipped) ;;
+            *) echo "::error::GPU job result '$BUILD_RESULT'. Re-run, or apply the 'skip-gpu-tests' label to merge without GPU CI."; exit 1 ;;
+          esac
