@@ -84,12 +84,6 @@ and push to `main` it runs **by default**.
   so a PR fails fast instead of hanging at GitHub's 24-hour queue limit. If that
   happens: re-run the job once a runner is free, or apply `skip-gpu-tests`.
 
-> **Known issue:** `test_haiku[vllm]` is currently `xfail`ed under the vLLM
-> backend — it reproducibly raises `NullMask` ("Unable to compute log
-> probability of mask that rules out all tokens") in the haiku example. See
-> [#47](https://github.com/genlm/llamppl/issues/47). Remove the `xfail` in
-> `tests/test_examples.py::test_haiku` once it's fixed.
-
 **Recommended maintainer flow:** make your change → if it touches GPU paths and
 you have a GPU, run the GPU tests locally → open the PR → add `skip-gpu-tests`
 if you've validated locally or the change is GPU-irrelevant, otherwise let CI
