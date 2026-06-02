@@ -220,6 +220,11 @@ class Model:
         """
         p = await dist.log_prob(x)
         self.score(p)
+        if p == float("-inf"):
+            # A zero-probability observation makes this particle impossible;
+            # finish it (as condition(False) does) so it is dropped at the next
+            # resample rather than extended further.
+            self.finish()
         return x
 
     async def sample(self, dist, proposal=None):

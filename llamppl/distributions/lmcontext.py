@@ -78,12 +78,14 @@ class LMTokenMask(Distribution):
             else self.ctx.model_mask - self.mask
         )
         if len(good_tokens) == 0:
-            # If there are no good tokens, the log probability of v under the mask is -inf
-            # However, since this method updates the model_mask as a side-effect,
-            # this will put the context in an invalid state, so we instead raise an exception.
-            raise NullMask(
-                "Unable to compute log probability of mask that rules out all tokens."
-            )
+            # No token satisfies the mask: conditioning on it is a zero-probability
+            # event, so the log-probability is -inf. Return it *before* the
+            # model_mask / next_token_logprobs updates below — applying those with an
+            # empty good_tokens set would corrupt the context (NaN logprobs, empty
+            # mask). Model.observe finishes the particle when it sees this -inf, so
+            # the impossible particle is dropped at the next resample instead of
+            # being extended or aborting the run.
+            return float("-inf")
         else:
             logprob_good = logsumexp(self.ctx.next_token_logprobs[list(good_tokens)])
 
@@ -92,10 +94,6 @@ class LMTokenMask(Distribution):
         self.ctx.next_token_logprobs -= logprob_good
         self.ctx.model_mask = good_tokens
         return logprob_good
-
-
-class NullMask(Exception):
-    pass
 
 
 class LMContext:

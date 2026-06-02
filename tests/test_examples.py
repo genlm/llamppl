@@ -44,18 +44,7 @@ def test_hard_constraints(LLM, n_particles=20, max_tokens=25):
 
 
 @pytest.mark.parametrize("backend", backends)
-def test_haiku(LLM, backend, request, n_particles=20):
-    if backend == "vllm":
-        # Known failure under the vLLM backend: the haiku example hits
-        # NullMask ("Unable to compute log probability of mask that rules out
-        # all tokens"). Tracked separately for triage; xfail (non-strict) so it
-        # doesn't block CI but flags via xpass if it starts passing.
-        request.applymarker(
-            pytest.mark.xfail(
-                reason="vLLM backend: NullMask (mask rules out all tokens) in haiku example",
-                strict=False,
-            )
-        )
+def test_haiku(LLM, n_particles=20):
     particles = asyncio.run(
         run_haiku(LLM, poem_title="The beauty of testing", n_particles=n_particles)
     )
