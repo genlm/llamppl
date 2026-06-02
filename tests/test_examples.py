@@ -57,10 +57,10 @@ def test_haiku(LLM, n_particles=20):
     reason="hf-only regression; the MLX/macOS CI job runs hf on MPS and OOMs",
 )
 def test_haiku_impossible_mask_completes_instead_of_raising():
-    # Regression for #47: with this seed the haiku example drives a particle into
-    # an impossible mask (every token ruled out). That particle must be dropped
-    # (weight 0), not raise and abort the whole run. Deterministic on gpt2/hf
-    # because all sampling goes through the global numpy RNG.
+    # With this seed the haiku example drives a particle into an impossible mask
+    # (every token ruled out). That particle must be dropped (weight 0), not raise
+    # and abort the whole run. Deterministic on gpt2/hf because all sampling goes
+    # through the global numpy RNG.
     np.random.seed(21)
     LLM = CachedCausalLM.from_pretrained("gpt2", backend="hf")
     particles = asyncio.run(
