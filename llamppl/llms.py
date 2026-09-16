@@ -2,7 +2,6 @@
 
 import string
 import warnings
-from collections import defaultdict
 
 import torch
 from genlm.backend.llm import AsyncTransformer
@@ -26,52 +25,54 @@ warnings.filterwarnings("once", category=DeprecationWarning)
 warnings.filterwarnings("once", category=RuntimeWarning)
 
 
+MID_PUNCTUATION_CHARS = (",", ":", ";", "-", '"')
+END_PUNCTUATION_CHARS = (".", "!", "?")
+
+
 class Masks:
+    """``[V]`` boolean masks over ``lm.str_vocab``, on ``lm.device``. Combine them with
+    ``|``, ``&`` and ``~``; ``lm.token_mask(ids)`` builds one from token ids."""
+
     def __init__(self, lm):
-        self.ALL_TOKENS = set(range(len(lm.str_vocab)))
-        self.STARTS_NEW_WORD = set(
+        vocab = lm.str_vocab
+        self.STARTS_NEW_WORD = lm.token_mask(
             i
-            for (i, v) in enumerate(lm.str_vocab)
+            for (i, v) in enumerate(vocab)
             if v[0] == " "
             and len(v) > 1
             and v[1] not in string.whitespace
             and v[1] not in string.punctuation
         )
-        self.CONTINUES_CURRENT_WORD = set(
-            i
-            for (i, v) in enumerate(lm.str_vocab)
-            if all(c in "'" or c.isalpha() for c in v)
+        self.CONTINUES_CURRENT_WORD = lm.token_mask(
+            i for (i, v) in enumerate(vocab) if all(c in "'" or c.isalpha() for c in v)
         )
-        self.MID_PUNCTUATION = set(
-            i for (i, v) in enumerate(lm.str_vocab) if v in (",", ":", ";", "-", '"')
+        self.MID_PUNCTUATION = lm.token_mask(
+            i for (i, v) in enumerate(vocab) if v in MID_PUNCTUATION_CHARS
         )
-        self.END_PUNCTUATION = set(
-            i for (i, v) in enumerate(lm.str_vocab) if v in (".", "!", "?")
+        self.END_PUNCTUATION = lm.token_mask(
+            i for (i, v) in enumerate(vocab) if v in END_PUNCTUATION_CHARS
         )
         self.PUNCTUATION = self.MID_PUNCTUATION | self.END_PUNCTUATION
-        self.CONTAINS_WHITESPACE = set(
-            i
-            for (i, v) in enumerate(lm.str_vocab)
-            if any(c in string.whitespace for c in v)
+        self.CONTAINS_WHITESPACE = lm.token_mask(
+            i for (i, v) in enumerate(vocab) if any(c in string.whitespace for c in v)
         )
-        self.EOS = set([lm.tokenizer.eos_token_id])
-
-        self.precompute_token_lengths(lm)
-
-    def precompute_token_lengths(self, lm):
-        """Precompute the length of each token. Special tokens are considered to have length 0."""
-        self._token_lengths = {i: len(v) for (i, v) in enumerate(lm.str_vocab)}
-        for i in lm.tokenizer.all_special_ids:
-            self._token_lengths[i] = 0
+        self.EOS = lm.token_mask([lm.tokenizer.eos_token_id])
+        special = set(lm.tokenizer.all_special_ids)  # special tokens have length 0
+        self._token_lengths = torch.tensor(
+            [0 if i in special else len(v) for (i, v) in enumerate(vocab)],
+            device=lm.device,
+        )
 
     def token_length_mask(self, min: int = None, max: int = None):
+        """Tokens whose string length lies in ``[min, max]``."""
+        lengths = self._token_lengths
+        if min is None and max is None:
+            return torch.ones_like(lengths, dtype=torch.bool)
         if min is None:
-            min = 0
+            return lengths <= max
         if max is None:
-            max = float("inf")
-        return set(
-            [i for i, v_len in self._token_lengths.items() if min <= v_len <= max]
-        )
+            return lengths >= min
+        return (lengths >= min) & (lengths <= max)
 
 
 class TokenSequence:
@@ -193,6 +194,7 @@ class CachedCausalLM:
         model (genlm_backend.llm.AsyncLM): The underlying language model (either `AsyncVirtualLM` or `AsyncTransformer`).
         str_vocab (list[str]): List mapping token IDs to their string representations.
         byte_vocab (list[bytes]): List mapping token IDs to their byte representations.
+        device (torch.device): Where next-token rows and masks live.
         masks (Masks): Token masks for filtering logits during generation.
     """
 
@@ -301,6 +303,7 @@ class CachedCausalLM:
         self.tokenizer = model.tokenizer
         self.str_vocab = model.str_vocab
         self.byte_vocab = model.byte_vocab
+        self.device = model.device
         self.masks = Masks(self)
 
     @property
@@ -323,10 +326,9 @@ class CachedCausalLM:
             token_ids (list[int]): a list of token ids, representing a prompt to the language model.
 
         Returns:
-            logprobs (numpy.array): a numpy array of length `len(str_vocab)` (equivalently `len(byte_vocab)`) with the language model's log (normalized) probabilities for the next token following the prompt.
+            logprobs (torch.Tensor): a `[len(str_vocab)]` tensor on `self.device` with the language model's log (normalized) probabilities for the next token following the prompt.
         """
-        logprobs = await self.model.next_token_logprobs(token_ids)
-        return logprobs.float().cpu().numpy()
+        return await self.model.next_token_logprobs(token_ids)
 
     def next_token_logprobs_unbatched(self, token_ids):
         """Request log probabilities of next token. Not asynchronous, and does not support auto-batching.
@@ -335,9 +337,22 @@ class CachedCausalLM:
             token_ids (list[int]): a list of token ids, representing a prompt to the language model.
 
         Returns:
-            logprobs (numpy.array): a numpy array of length `len(str_vocab)` (equivalently `len(byte_vocab)`) with the language model's log (normalized) probabilities for the next token following the prompt.
+            logprobs (torch.Tensor): a `[len(str_vocab)]` tensor on `self.device` with the language model's log (normalized) probabilities for the next token following the prompt.
         """
-        return self.model.next_token_logprobs_sync(token_ids).float().cpu().numpy()
+        return self.model.next_token_logprobs_sync(token_ids)
+
+    def token_mask(self, token_ids):
+        """A `[len(str_vocab)]` boolean mask on `self.device`, `True` on `token_ids`.
+
+        Args:
+            token_ids (iterable[int]): the token ids inside the mask.
+
+        Returns:
+            (torch.Tensor): the mask. Combine masks with `|`, `&` and `~`.
+        """
+        mask = torch.zeros(len(self.str_vocab), dtype=torch.bool)
+        mask[list(token_ids)] = True
+        return mask.to(self.device)
 
     def clear_cache(self):
         """Clear the cache of log probabilities and key/value pairs.
@@ -369,9 +384,9 @@ class CachedCausalLM:
 
     def reset_async_queries(self):
         """Clear any pending language model queries from the queue."""
-        if self.backend in ["hf", "mlx"]:
+        if self.backend == "hf":
             self.model.reset_async_queries()
-        elif self.backend == "vllm":
+        elif self.backend in ["vllm", "mlx"]:
             warnings.warn(
                 "reset_async_queries() is only supported for the HuggingFace backend. No operation performed.",
                 RuntimeWarning,
@@ -390,11 +405,11 @@ class CachedCausalLM:
         Args:
             prompt_tokens (list[int]): token ids for the prompt to cache.
         """
-        if self.backend in ["hf", "mlx"]:
+        if self.backend == "hf":
             self.model.cache_kv(prompt_tokens)
-        elif self.backend == "vllm":
+        elif self.backend in ["vllm", "mlx"]:
             warnings.warn(
-                "cache_kv() is only supported for the HuggingFace backend. The KV cache for the vLLM backend is handled internally by vLLM. No operation performed.",
+                "cache_kv() is only supported for the HuggingFace backend. The vLLM and MLX backends manage their own KV cache. No operation performed.",
                 RuntimeWarning,
                 stacklevel=2,
             )

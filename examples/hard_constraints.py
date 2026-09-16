@@ -9,7 +9,7 @@ from llamppl import smc_standard
 
 def make_masks(LLM):
     return {
-        i: set(
+        i: LLM.token_mask(
             j
             for (j, v) in enumerate(LLM.str_vocab)
             if j != LLM.tokenizer.eos_token_id

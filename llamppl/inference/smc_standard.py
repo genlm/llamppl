@@ -32,6 +32,8 @@ async def smc_standard(
         particles (list[llamppl.modeling.Model]): The completed particles after inference.
     """
     resample_fn = get_resampling_fn(resampling_method)
+    with np.errstate(divide="ignore"):  # ess_threshold=0 means never resample
+        log_ess_threshold = np.log(ess_threshold) + np.log(n_particles)
 
     particles = [copy.deepcopy(model) for _ in range(n_particles)]
     await asyncio.gather(*[p.start() for p in particles])
@@ -65,10 +67,9 @@ async def smc_standard(
         normalized_weights = W - w_sum
 
         # Resample if necessary
-        if -logsumexp(normalized_weights * 2) < np.log(ess_threshold) + np.log(
-            n_particles
-        ):
+        if -logsumexp(normalized_weights * 2) < log_ess_threshold:
             probs = np.exp(normalized_weights)
+            probs /= probs.sum()  # resample_fn takes weights summing to 1
             ancestor_indices = resample_fn(probs).tolist()
 
             if record:
@@ -95,7 +96,7 @@ async def smc_standard(
                 if json_file is not None
                 else f"{model.__class__.__name__}-{timestamp}.json"
             )
-            json_path = f"{visualization_dir}/{json_file}"
+            json_path = f"{visualization_dir}/{json_relative}"
 
         # Save JSON
         with open(json_path, "w") as f:

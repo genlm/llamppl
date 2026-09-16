@@ -31,7 +31,7 @@ In principle, key-value caching is most useful when:
   cost to cache *different* key-value sequences for *each* particle, to speed up future next-token
   queries.
 
-When using the `vllm` backend, both types of caching are handled automatically.
+When using the `vllm` or `mlx` backends, both types of caching are handled automatically.
 
 With the huggingface backend, only the first use case is well-supported by the LLaMPPL library, via the
 [`lm.cache_kv(prompt)`][llamppl.llms.CachedCausalLM.cache_kv] method. This method computes and caches key and value vectors

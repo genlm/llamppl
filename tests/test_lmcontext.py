@@ -34,9 +34,9 @@ def test_init(lm):
     prompt = "Hello, world!"
     lmcontext = LMContext(lm, prompt)
     assert lmcontext.tokens == lm.tokenizer.encode(prompt)
-    logprobs = lm.next_token_logprobs_unbatched(lmcontext.tokens)
+    logprobs = lm.next_token_logprobs_unbatched(lmcontext.tokens).cpu()
     np.testing.assert_allclose(
-        lmcontext.next_token_logprobs,
+        lmcontext.next_token_logprobs.cpu(),
         logprobs,
         rtol=5e-4,
         err_msg="Sync context __init__",
@@ -47,7 +47,7 @@ def test_init(lm):
 
     lmcontext = asyncio.run(async_context())
     np.testing.assert_allclose(
-        lmcontext.next_token_logprobs,
+        lmcontext.next_token_logprobs.cpu(),
         logprobs,
         rtol=5e-4,
         err_msg="Async context __init__",
@@ -58,7 +58,7 @@ def test_init(lm):
 
     lmcontext = asyncio.run(async_context_create())
     np.testing.assert_allclose(
-        lmcontext.next_token_logprobs,
+        lmcontext.next_token_logprobs.cpu(),
         logprobs,
         rtol=5e-4,
         err_msg="Async context create",
@@ -73,8 +73,9 @@ def test_observe_impossible_mask_kills_particle():
     # disjoint mask exercises the path deterministically.
     lm = CachedCausalLM.from_pretrained("gpt2", backend="mock")
     ctx = LMContext(lm, "Hello, world!")
-    ctx.model_mask = {0, 1, 2}
-    impossible = ctx.mask_dist({3, 4})  # disjoint from model_mask: no good tokens
+    asyncio.run(ctx.mask_dist(lm.token_mask({0, 1, 2})).log_prob(True))
+    row_before = ctx.next_token_logprobs
+    impossible = ctx.mask_dist(lm.token_mask({3, 4}))  # disjoint from the live mask
 
     m = Model()
     result = asyncio.run(m.observe(impossible, True))
@@ -82,4 +83,47 @@ def test_observe_impossible_mask_kills_particle():
     assert result is True
     assert m.weight == float("-inf")  # zero-probability observation -> weight 0
     assert m.finished  # ...and the particle is finished
-    assert ctx.model_mask == {0, 1, 2}  # context untouched (returned before mutating)
+    assert ctx.next_token_logprobs is row_before  # untouched (returned before mutating)
+
+
+def test_mask_ops_match_numpy_reference():
+    # observe(mask, True) renormalizes onto the mask and returns its log-mass;
+    # a second mask composes with the first; observing a token returns its
+    # log-probability under the live (masked) row.
+    lm = CachedCausalLM.from_pretrained("gpt2", backend="mock")
+    ctx = LMContext(lm, "Hello, world!")
+    row = ctx.next_token_logprobs.cpu().numpy().astype(np.float64)
+
+    async def run():
+        m1 = lm.token_mask(range(0, 200))
+        m2 = lm.token_mask(range(100, 300))
+        lp1 = await ctx.mask_dist(m1).log_prob(True)
+        lp2 = await ctx.mask_dist(m2).log_prob(True)
+        lp_tok = await ctx.next_token().log_prob(150)
+        return lp1, lp2, lp_tok
+
+    lp1, lp2, lp_tok = asyncio.run(run())
+
+    def lse(x):
+        m = np.max(x)
+        return m + np.log(np.sum(np.exp(x - m)))
+
+    ref1 = lse(row[list(range(0, 200))])
+    masked = row[list(range(100, 200))]
+    ref2 = lse(masked) - ref1
+    ref_tok = row[150] - ref1 - ref2
+    assert lp1 == pytest.approx(ref1, rel=1e-4)
+    assert lp2 == pytest.approx(ref2, rel=1e-4)
+    assert lp_tok == pytest.approx(ref_tok, rel=1e-4)
+    assert len(ctx.tokens) == len(lm.tokenizer.encode("Hello, world!")) + 1
+
+
+def test_masks_are_boolean_rows_on_the_model_device():
+    lm = CachedCausalLM.from_pretrained("gpt2", backend="mock")
+    eos = lm.tokenizer.eos_token_id
+    for mask in (lm.masks.EOS, lm.masks.PUNCTUATION, lm.masks.token_length_mask(max=2)):
+        assert mask.dtype == torch.bool and mask.shape == (len(lm.str_vocab),)
+        assert mask.device == lm.device
+    assert lm.masks.EOS[eos] and lm.masks.EOS.sum() == 1
+    assert not (lm.masks.PUNCTUATION & ~lm.masks.PUNCTUATION).any()
+    assert lm.masks.token_length_mask(max=0)[eos]  # special tokens have length 0

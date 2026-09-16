@@ -49,6 +49,10 @@ examples = ["nltk>=3.8.1"]
 [tool.setuptools.packages.find]
 include = ["llamppl*"]
 
+[tool.setuptools]
+# The SMC viewer ships with the package; `html/smc.html` is a symlink to it.
+package-data = { "llamppl" = ["html/*"] }
+
 [build-system]
 requires = ["setuptools>=64.0", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"

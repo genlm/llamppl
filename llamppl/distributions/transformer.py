@@ -1,4 +1,5 @@
-import numpy as np
+from genlm.backend.draw import draw_from, logp_at
+from genlm.backend.llm import temper
 
 from ..llms import Token
 from ..llms import TokenSequence
@@ -27,21 +28,16 @@ class Transformer(Distribution):
 
         self.prompt = prompt
 
-    async def log_prob(self, x):
-        log_probs = await self.lm.next_token_logprobs(self.prompt)
-        log_probs = log_probs / self.temp
+    async def _log_probs(self):
+        return temper(await self.lm.next_token_logprobs(self.prompt), self.temp)
 
+    async def log_prob(self, x):
         if isinstance(x, Token):
             x = x.token_id
-
-        return log_probs[x]
+        return await logp_at(await self._log_probs(), x)
 
     async def sample(self):
-        log_probs = await self.lm.next_token_logprobs(self.prompt)
-        log_probs = log_probs / self.temp
-        probs = np.exp(log_probs)
-        token_id = np.random.choice(len(probs), p=(probs))
-        logprob = log_probs[token_id]
+        token_id, _, logprob = await draw_from(await self._log_probs())
         return (
             Token(self.lm, token_id, self.lm.tokenizer.convert_ids_to_tokens(token_id)),
             logprob,

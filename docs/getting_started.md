@@ -48,8 +48,8 @@ class MyModel(Model):
         self.eos_token = lm.tokenizer.eos_token_id
 
         # The forbidden letter
-        self.forbidden_tokens = set(i for (i, v) in enumerate(lm.vocab)
-                                      if forbidden_letter in v)
+        self.forbidden_tokens = lm.token_mask(i for (i, v) in enumerate(lm.str_vocab)
+                                              if forbidden_letter in v)
 
     # The step method is used to perform a single 'step' of generation.
     # This might be a single token, a single phrase, or any other division.

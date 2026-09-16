@@ -1,6 +1,7 @@
 import asyncio
 import string
 
+from .llms import END_PUNCTUATION_CHARS, MID_PUNCTUATION_CHARS
 from .modeling import submodel
 
 
@@ -107,7 +108,7 @@ async def sample_word_2(
             await self.observe(
                 self.context.mask_dist(
                     self.context.lm.masks.token_length_mask(
-                        max_chars=max_chars - len(word.strip())
+                        max=max_chars - len(word.strip())
                     )
                 ),
                 True,
@@ -134,17 +135,22 @@ async def sample_word_2(
     # Sample punctuation, if desired
     mid_punctuation, end_punctuation = "", ""
 
-    mask = set()
-    if allow_mid_punctuation:
-        mask = mask | context.lm.masks.MID_PUNCTUATION
-    if allow_end_punctuation:
-        mask = mask | context.lm.masks.END_PUNCTUATION
+    masks = context.lm.masks
+    if allow_mid_punctuation and allow_end_punctuation:
+        mask = masks.PUNCTUATION
+    elif allow_mid_punctuation:
+        mask = masks.MID_PUNCTUATION
+    elif allow_end_punctuation:
+        mask = masks.END_PUNCTUATION
+    else:
+        mask = None
 
-    if mask and await self.sample(context.mask_dist(mask)):
+    if mask is not None and await self.sample(context.mask_dist(mask)):
         token = await self.sample(context.next_token())
-        if token.token_id in context.lm.masks.MID_PUNCTUATION:
-            mid_punctuation = context.lm.str_vocab[token.token_id]
-        if token.token_id in context.lm.masks.END_PUNCTUATION:
-            end_punctuation = context.lm.str_vocab[token.token_id]
+        punctuation = context.lm.str_vocab[token.token_id]
+        if punctuation in MID_PUNCTUATION_CHARS:
+            mid_punctuation = punctuation
+        if punctuation in END_PUNCTUATION_CHARS:
+            end_punctuation = punctuation
 
     return word, mid_punctuation, end_punctuation

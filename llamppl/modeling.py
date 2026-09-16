@@ -162,7 +162,9 @@ class Model:
         Args:
             score: logarithm of the amount by which the particle's weight should be multiplied.
         """
-        self.weight += score
+        w = self.weight + score
+        # `inf - inf` is NaN; a NaN weight means impossible, which is -inf.
+        self.weight = float("-inf") if w != w else w
 
     def condition(self, b):
         """Constrain a given Boolean expression to be `True`.

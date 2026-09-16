@@ -1,0 +1,5 @@
+# genlm-backend is co-developed with this branch: llamppl's distributions ride its
+# batched draw window (`genlm.backend.draw`), which no released backend carries. CI
+# installs it from source so it tests against the surface it targets. Delete this file
+# and raise the floor in pyproject.toml once it releases.
+genlm-backend @ git+https://github.com/genlm/genlm-backend@shepard/modernize

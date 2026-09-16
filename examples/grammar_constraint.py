@@ -67,7 +67,9 @@ class GrammarConstrainedSMC(Model):
             return
 
         # Sample a token from the valid tokens
-        await self.observe(self.context.mask_dist(set(valid_token_ids)), True)
+        await self.observe(
+            self.context.mask_dist(self.lm.token_mask(valid_token_ids)), True
+        )
         token = await self.sample(self.context.next_token())
 
         # If the token is the end-of-string token, accept and terminate

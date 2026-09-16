@@ -1,8 +1,7 @@
-import numpy as np
 import torch
+from genlm.backend.draw import draw_from, logp_at
 
 from ..llms import Token
-from ..util import log_softmax
 from .distribution import Distribution
 
 
@@ -14,28 +13,28 @@ class TokenCategorical(Distribution):
 
         Args:
             lm (llamppl.llms.CachedCausalLM): the language model whose vocabulary is to be generated from.
-            logits (np.array): a numpy array of unnormalized log probabilities.
+            logits (torch.Tensor | numpy.ndarray): unnormalized log probabilities.
         """
         self.lm = lm
-        self.log_probs = log_softmax(logits)
+        self.log_probs = torch.log_softmax(torch.as_tensor(logits), dim=-1)
         if self.lm.tokenizer.vocab_size != len(logits):
             raise RuntimeError(
                 f"TokenCategorical: vocab size is {self.lm.tokenizer.vocab_size} but provided {len(logits)} logits."
             )
 
     async def sample(self):
-        n = np.random.choice(len(self.log_probs), p=(np.exp(self.log_probs)))
+        n, _, logprob = await draw_from(self.log_probs)
         return (
             Token(self.lm, n, self.lm.tokenizer.convert_ids_to_tokens(n)),
-            self.log_probs[n],
+            logprob,
         )
 
     async def log_prob(self, value):
-        return self.log_probs[value.token_id]
+        return await logp_at(self.log_probs, value.token_id)
 
     async def argmax(self, idx):
-        tok = torch.argsort(self.log_probs)[-idx]
+        tok = int(torch.argsort(self.log_probs)[-idx])
         return (
             Token(self.lm, tok, self.lm.tokenizer.convert_ids_to_tokens(tok)),
-            self.log_probs[tok],
+            self.log_probs[tok].item(),
         )
