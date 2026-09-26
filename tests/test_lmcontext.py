@@ -26,7 +26,9 @@ else:
 @pytest.fixture
 def lm(backend):
     kwargs = {"cache_size": 10} if backend == "mlx" else {}
-    return CachedCausalLM.from_pretrained("gpt2", backend=backend, **kwargs)
+    return CachedCausalLM.from_pretrained(
+        "openai-community/gpt2", backend=backend, **kwargs
+    )
 
 
 @pytest.mark.parametrize("backend", backends)
@@ -71,7 +73,7 @@ def test_observe_impossible_mask_kills_particle():
     # finish the particle (weight 0) so it is dropped at the next resample instead of
     # aborting the whole run. Backend-independent, so a fast mock LM with a hand-set,
     # disjoint mask exercises the path deterministically.
-    lm = CachedCausalLM.from_pretrained("gpt2", backend="mock")
+    lm = CachedCausalLM.from_pretrained("openai-community/gpt2", backend="mock")
     ctx = LMContext(lm, "Hello, world!")
     ctx.model_mask = {0, 1, 2}
     impossible = ctx.mask_dist({3, 4})  # disjoint from model_mask: no good tokens

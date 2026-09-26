@@ -369,9 +369,9 @@ class CachedCausalLM:
 
     def reset_async_queries(self):
         """Clear any pending language model queries from the queue."""
-        if self.backend in ["hf", "mlx"]:
+        if self.backend == "hf":
             self.model.reset_async_queries()
-        elif self.backend == "vllm":
+        elif self.backend in ["vllm", "mlx"]:
             warnings.warn(
                 "reset_async_queries() is only supported for the HuggingFace backend. No operation performed.",
                 RuntimeWarning,
@@ -390,11 +390,11 @@ class CachedCausalLM:
         Args:
             prompt_tokens (list[int]): token ids for the prompt to cache.
         """
-        if self.backend in ["hf", "mlx"]:
+        if self.backend == "hf":
             self.model.cache_kv(prompt_tokens)
-        elif self.backend == "vllm":
+        elif self.backend in ["vllm", "mlx"]:
             warnings.warn(
-                "cache_kv() is only supported for the HuggingFace backend. The KV cache for the vLLM backend is handled internally by vLLM. No operation performed.",
+                f"cache_kv() is only supported for the HuggingFace backend. The {self.backend} backend manages its KV cache internally. No operation performed.",
                 RuntimeWarning,
                 stacklevel=2,
             )
