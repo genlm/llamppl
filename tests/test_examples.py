@@ -33,7 +33,9 @@ def LLM(backend):
         if backend == "mlx"
         else {}
     )
-    return CachedCausalLM.from_pretrained("gpt2", backend=backend, **kwargs)
+    return CachedCausalLM.from_pretrained(
+        "openai-community/gpt2", backend=backend, **kwargs
+    )
 
 
 @pytest.mark.parametrize("backend", backends)
@@ -62,7 +64,7 @@ def test_haiku_impossible_mask_completes_instead_of_raising():
     # and abort the whole run. Deterministic on gpt2/hf because all sampling goes
     # through the global numpy RNG.
     np.random.seed(21)
-    LLM = CachedCausalLM.from_pretrained("gpt2", backend="hf")
+    LLM = CachedCausalLM.from_pretrained("openai-community/gpt2", backend="hf")
     particles = asyncio.run(
         run_haiku(LLM, poem_title="The beauty of testing", n_particles=20)
     )
