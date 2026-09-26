@@ -39,7 +39,6 @@ jobs:
             python -m venv venv
             source venv/bin/activate
             pip install -e .[dev,examples,vllm]
-            pip install --force-reinstall 'triton==3.2.0'
             # Add the project root to the PYTHONPATH for examples
             PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests --cov=llamppl --cov-report=json
 
